@@ -7687,3 +7687,20 @@ docker rmi $(docker images -f "dangling=true" -q)
  git remote add origin https://github.com/gakkiyomi/study-log.git
 ~~~
 
+
+
+### 2020.6.16
+
+#### git diff 不显示修改的代码
+
+~~~shell
+ git diff --cached src/main/java/net/skycloud/cmdb/common/utils/CommonUtils.java
+
+~~~
+
+#### git commit message 提交错了， 对上次提交进行修改
+
+~~~shell
+git commit --amend -m 'feat:2020.6.16'
+~~~
+
