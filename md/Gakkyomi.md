@@ -7694,7 +7694,7 @@ docker rmi $(docker images -f "dangling=true" -q)
 #### git diff 不显示修改的代码
 
 ~~~shell
- git diff --cached src/main/java/net/skycloud/cmdb/common/utils/CommonUtils.java
+git diff --cached src/main/java/net/skycloud/cmdb/common/utils/CommonUtils.java
 
 ~~~
 
@@ -7702,5 +7702,39 @@ docker rmi $(docker images -f "dangling=true" -q)
 
 ~~~shell
 git commit --amend -m 'feat:2020.6.16'
+~~~
+
+
+
+### 2020.6.17
+
+#### 发生exception回滚事务，保证不产生脏数据
+
+在需要的方法上填上此注解
+
+~~~java
+@Transactional(rollbackFor = Exception.class)
+~~~
+
+### 2020.6.18
+
+#### @Transactional的继承关系
+
+我们只在父类BaseService中声明了@Transactional，子类就自然得到事务增强。注解并没有继承这种说法，但此处用“继承关系”来形容父类@Transactional和子类方法之间的关系最恰当不过了：父类Service声明了@Transactional，子类继承父类，父类的声明的@Transactional会对子类的所有方法进行事务增强。
+
+#### @Transactional的优先级
+
+如果子类的方法重写了父类的方法并且声明了@Transactional，那么子类的事务声明会优先于父类的事务声明。
+
+#### @Transactional方法的可见度
+
+上面为了测试演示方便，我们把@Transactional都声明在了类上。实际上@Transactional 可以作用于接口、接口方法、类以及类方法上。**但是 Spring 小组建议不要在接口或者接口方法上使用该注解，因为这只有在使用基于接口的代理时它才会生效。另外， @Transactional 注解应该只被应用到 public 方法上，这是由 Spring AOP 的本质决定的（从上面的Spring AOP 事务增强可以看出，就是针对方法的）。如果你在 protected、private 或者默认可见性的方法上使用 @Transactional 注解，这将被忽略，也不会抛出任何异常。**
+
+
+
+#### neo4j删除节点唯一性约束
+
+~~~cypher
+DROP CONSTRAINT ON (test:TEST) ASSERT test.name IS UNIQUE
 ~~~
 

@@ -357,7 +357,29 @@ show firewall ippool
 ###### SET
 
 ```
-`config firewall ippool``    ``edit ``"inner2outter"``        ``set` `type overload``        ``set` `startip ``122.1``.``1.1``        ``set` `endip ``122.1``.``1.1``        ``set` `arp-reply enable``        ``set` `arp-intf ``"port2"``        ``set` `comments ``"hhhaaaa"``end``config firewall policy``    ``edit ``3``        ``set` `srcintf ``"port1"``        ``set` `dstintf ``"port2"``        ``set` `srcaddr ``"all"``        ``set` `dstaddr ``"all"``        ``set` `action accept``        ``set` `ippool enable``        ``set` `poolname ``"inner2outter"``        ``set` `schedule ``"always"``        ``set` `service ``"ALL"``        ``set` `nat enable``    ``next``end`
+config firewall ippool
+    edit "inner2outter"
+        set type overload
+        set startip 122.1.1.1
+        set endip 122.1.1.1
+        set arp-reply enable
+        set arp-intf "port2"
+        set comments "hhhaaaa"
+end
+config firewall policy
+    edit 3
+        set srcintf "port1"
+        set dstintf "port2"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set ippool enable
+        set poolname "inner2outter"
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+end
 ```
 
 
@@ -365,7 +387,61 @@ show firewall ippool
 ##### STATIC/DNAT
 
 ```
-`-----DNAT-----``config firewall vip``    ``edit v1``        ``set` `comment ``"dnat"``        ``set` `src-filter ``102.1``.``1.1` `105.1``.``1.0``/``24` `106.1``.``1.1``-``106.1``.``1.2``        ``set` `extip ``155.1``.``1.1``        ``set` `mappedip ``192.168``.``182.78``        ``set` `extintf port2``        ``set` `arp-reply enable``        ``set` `portforward enable``        ``set` `protocol tcp``        ``set` `extport ``80``-``80``        ``set` `mappedport ``90``-``90``        ``set` `portmapping-type ``1``-to-``1``end`  `config firewall policy``    ``edit ``4``        ``set` `srcintf ``"port2"``        ``set` `dstintf ``"port1"``        ``set` `srcaddr ``"all"``        ``set` `dstaddr ``"v1"``        ``set` `action accept``        ``set` `schedule ``"always"``        ``set` `service ``"ALL"``    ``next``end``-----STATIC-----``config firewall vip``    ``edit v2``        ``set` `comment ``"static"``        ``set` `type ``static``-nat``        ``set` `src-filter ``102.1``.``1.1` `105.1``.``1.0``/``24` `106.1``.``1.1``-``106.1``.``1.2``        ``set` `extip ``155.1``.``1.22``        ``set` `mappedip ``192.168``.``182.79``        ``set` `extintf port2``        ``set` `arp-reply enable``        ``set` `portforward enable``        ``set` `protocol tcp``        ``set` `extport ``80``-``80``        ``set` `mappedport ``90``-``90``        ``set` `portmapping-type ``1``-to-``1``end``config firewall policy``    ``edit ``5``        ``set` `srcintf ``"port2"``        ``set` `dstintf ``"port1"``        ``set` `srcaddr ``"all"``        ``set` `dstaddr ``"v2"``        ``set` `action accept``        ``set` `schedule ``"always"``        ``set` `service ``"ALL"``    ``next``end`
+-----DNAT-----
+config firewall vip
+    edit v1
+        set comment "dnat"
+        set src-filter 102.1.1.1 105.1.1.0/24 106.1.1.1-106.1.1.2
+        set extip 155.1.1.1
+        set mappedip 192.168.182.78
+        set extintf port2
+        set arp-reply enable
+        set portforward enable
+        set protocol tcp
+        set extport 80-80
+        set mappedport 90-90
+        set portmapping-type 1-to-1
+end
+ 
+ 
+config firewall policy
+    edit 4
+        set srcintf "port2"
+        set dstintf "port1"
+        set srcaddr "all"
+        set dstaddr "v1"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+    next
+end
+-----STATIC-----
+config firewall vip
+    edit v2
+        set comment "static"
+        set type static-nat
+        set src-filter 102.1.1.1 105.1.1.0/24 106.1.1.1-106.1.1.2
+        set extip 155.1.1.22
+        set mappedip 192.168.182.79
+        set extintf port2
+        set arp-reply enable
+        set portforward enable
+        set protocol tcp
+        set extport 80-80
+        set mappedport 90-90
+        set portmapping-type 1-to-1
+end
+config firewall policy
+    edit 5
+        set srcintf "port2"
+        set dstintf "port1"
+        set srcaddr "all"
+        set dstaddr "v2"
+        set action accept
+        set schedule "always"
+        set service "ALL"
+    next
+end
 ```
 
 ##### SNAT ()
