@@ -7785,3 +7785,200 @@ git push origin --delete test  #删除远程分支s
 | 开发者友好  | 客户端比较方面，二进制消息不能读     | 可读消息                                       |
 | 对外开放    | 一般需要转成REST/文本协议            | 可直接对外开发                                 |
 
+
+
+### 2020.6.22
+
+#### error at ::0 formal unbound in pointcut
+
+>在使用注解开发aop程序时出现这种报错是有很多情况的，下面只介绍我在开发过程中碰到的，在使用@AfterReturning时多参数情况
+
+使用args指定参数
+
+~~~java
+@Pointcut(value = "execution(public * net.skycloud.cmdb.resource.service.NodeService.save(..)) && args(..,username)")
+    public void createNode(String username) {
+
+    }
+~~~
+
+~~~java
+@AfterReturning(returning = "ret",pointcut = "createNode(username)")
+    public void createNodeAfterReturning(Node ret, String username) {
+        String label = ret.getLabel();
+        List<Relationship> relationships = new ArrayList<>();
+        try {
+            relationships = relationshipService.findByNodeLabel(label);
+            if (relationships.isEmpty()) {
+                return;
+            }
+            for (Relationship relationship : relationships) {
+                relationshipService.autoGenerateRelationship(ret,relationship);
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        //prometheus 记录节点的创建
+        List<Tag> tags = new ArrayList<>();
+        tags.add(Tag.of("name",ret.getLabel()));
+        tags.add(Tag.of("username", username));
+        tags.add(Tag.of("nodeId", (String)ret.getProperties().get("id")));
+        AtomicInteger atomicInteger = new AtomicInteger();
+        Gauge gauge = Gauge.builder(ret.getLabel(), atomicInteger, AtomicInteger::get)
+                .tags(tags)
+                .description("实例数量变化量")
+                .register(registry);
+        atomicInteger.incrementAndGet();   //+1
+    }
+~~~
+
+
+
+#### springboot 2.0 集成prometheus
+
+prometheus提供的官方sdk 不支持springboot2.0 并且没有集成的想法，所以使用其他sdk
+
+Micrometer 为 Java 平台上的性能数据收集提供了一个通用的 API，它提供了多种度量指标类型（Timers、Guauges、Counters等），同时支持接入不同的监控系统，例如 Influxdb、Graphite、Prometheus 等。我们可以通过 Micrometer 收集 Java 性能数据，配合 Prometheus 监控系统实时获取数据，并最终在 Grafana 上展示出来，从而很容易实现应用的监控
+
+
+~~~groovy
+    //prometheus
+    compile group: 'io.micrometer', name: 'micrometer-core', version: '1.5.1'
+    compile group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.5.1'
+~~~
+
+
+
+编写配置文件**(此处配置config名不能为PrometheusConfig否则与内置的冲突，并且覆盖失败而报错)**
+
+~~~java
+package net.skycloud.cmdb.common.config.prometheus;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author: fangcong
+ * @description:
+ * @create: Created by work on 2020-06-22 14:24
+ **/
+@Configuration
+public class CmdbPrometheusConfig {
+    @Bean
+    MeterRegistryCustomizer<MeterRegistry> configure(@Value("${spring.application.name}") String applicationName) {
+        return (registry) -> registry.config().commonTags("application", applicationName);
+    }
+}
+
+~~~
+
+然后使用sdk内置的四种不同的计量器:
+
++ 计数器（Counter）: 表示收集的数据是按照某个趋势（增加）一直变化的，也是最常用的一种计量器，例如接口请求总数、请求错误总数、队列数量变化等。
++ 计量仪（Gauge）: 表示搜集的瞬时的数据，可以任意变化的，例如常用的 CPU Load、Mem 使用量、Network 使用量、实时在线人数统计等，
++ 计时器（Timer）: 用来记录事件的持续时间，这个用的比较少。
++ 分布概要（Distribution summary）: 用来记录事件的分布情况，表示一段时间范围内对数据进行采样，可以用于统计网络请求平均延迟、请求延迟占比等。
+  
+
+我们使用Gauge对节点数量进行监控，新增节点，删除节点，更新节点
+
+```java
+@Autowired
+private MeterRegistry registry;
+
+//prometheus 记录节点的创建
+List<Tag> tags = new ArrayList<>();
+tags.add(Tag.of("name",ret.getLabel()));
+tags.add(Tag.of("username", username));
+tags.add(Tag.of("nodeId", (String)ret.getProperties().get("id")));
+AtomicInteger atomicInteger = new AtomicInteger();
+Gauge gauge = Gauge.builder(ret.getLabel(), atomicInteger, AtomicInteger::get)
+        .tags(tags)
+        .description("实例数量变化量")
+        .register(registry);
+atomicInteger.incrementAndGet();   //+1
+```
+
+#### 数据结构---父子树
+
+>List<T> list  中每个数据都有一个parentId指向了对应的父节点,若parentId为空则为起点
+
+~~~java
+package net.skycloud.cmdb.template.model;
+
+
+import java.util.List;
+
+/**
+ * @author: fangcong
+ * @description: 父子数据结构
+ * @create: Created by work on 2020-06-22 10:58
+ **/
+public class TemplateRelationTree<T> {
+
+    T current; //current
+
+    List<TemplateRelationTree> child; //child
+
+    public TemplateRelationTree() {
+    }
+
+    private TemplateRelationTree(Builder<T> builder) {
+        setCurrent(builder.current);
+        setChild(builder.child);
+    }
+
+    public T getCurrent() {
+        return current;
+    }
+
+    public void setCurrent(T current) {
+        this.current = current;
+    }
+
+    public List<TemplateRelationTree> getChild() {
+        return child;
+    }
+
+    public void setChild(List<TemplateRelationTree> child) {
+        this.child = child;
+    }
+
+    @Override
+    public String toString() {
+        return "Node{" +
+                "current=" + current +
+                ", child=" + child +
+                '}';
+    }
+
+
+    public static final class Builder<T> {
+        private T current;
+        private List<TemplateRelationTree> child;
+
+        public Builder() {
+        }
+
+        public Builder setCurrent(T val) {
+            current = val;
+            return this;
+        }
+
+        public Builder setChild(List<TemplateRelationTree> val) {
+            child = val;
+            return this;
+        }
+
+        public TemplateRelationTree build() {
+            return new TemplateRelationTree(this);
+        }
+    }
+}
+
+~~~
+
