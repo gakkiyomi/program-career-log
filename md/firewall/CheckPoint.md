@@ -53,3 +53,26 @@ Hide NAT 是指改变外出数据包的源端口并进行端口转换，即端�
    ​                                 Translated Destination填192.168.10.10
 
 ​                                        Translated Service填443
+
+### 使用mgmt cli命令管理配置
+
+首先登录mgmt
+
+~~~shell
+mgmt login user admin
+~~~
+
+然后使用mgmt命令
+
+例如：
+
+~~~shell
+mgmt_cli show gateways-and-servers details-level "full" --version 1.1 --format json
+~~~
+
+最后要退出mgmt,如果不退出，则会导致session增多，一旦session到了极限，则可能造成极大的风险，即其他管理员登录不上smartcenter  
+
+~~~
+mgmt logout
+~~~
+
