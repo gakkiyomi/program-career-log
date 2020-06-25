@@ -146,3 +146,104 @@ class Solution {
 }
 ~~~
 
+
+
+###  回文数
+
+>判断一个整数是否是回文数。回文数是指正序（从左向右）和倒序（从右向左）读都是一样的整数。
+
+1. 使用双指针，头尾扫描
+
+   ~~~java
+   public boolean isPalindrome(int x) {
+     			if(x < 0){
+             return false;
+           }
+           String str = Integer.valueOf(x).toString();
+           String[] strList = str.split("");
+           int a = 0;
+           int b = strList.length - 1;
+           for(int i = 0; i < strList.length; i++){
+               if(!strList[a].equals(strList[b])){
+                   return false;
+               }
+               a ++;
+               b --;
+           }
+           return true;
+       }
+   ~~~
+
+   2. 使用数学方法，不通过字符串方式实现，使用字符串方法实现需要而外的内存空间
+
+      >对于数字 1221，如果执行 1221 % 10，我们将得到最后一位数字 1，要得到倒数第二位数字，我们可以先通过除以 10 把最后一位数字从 1221 中移除，1221 / 10 = 122，再求出上一步结果除以 10 的余数，122 % 10 = 2，就可以得到倒数第二位数字。如果我们把最后一位数字乘以 10，再加上倒数第二位数字，1 * 10 + 2 = 12，就得到了我们想要的反转后的数字。如果继续这个过程，我们将得到更多位数的反转数字。
+      >
+      >现在的问题是，我们如何知道反转数字的位数已经达到原始数字位数的一半？
+      >
+      >由于整个过程我们不断将原始数字除以 10，然后给反转后的数字乘上 10，所以，当原始数字小于或等于反转后的数字时，就意味着我们已经处理了一半位数的数字了。
+      >
+
+<img src="https://assets.leetcode-cn.com/solution-static/9/9_fig1.png" alt="fig1" style="zoom:75%;" />
+
+~~~go
+func isPalindrome(x int) bool {
+    // 特殊情况：
+    // 如上所述，当 x < 0 时，x 不是回文数。
+    // 同样地，如果数字的最后一位是 0，为了使该数字为回文，
+    // 则其第一位数字也应该是 0
+    // 只有 0 满足这一属性
+    if x < 0 || (x % 10 == 0 && x != 0) {
+        return false
+    }
+
+    revertedNumber := 0
+    for x > revertedNumber {
+        revertedNumber = revertedNumber * 10 + x % 10
+        x /= 10
+    }
+
+    // 当数字长度为奇数时，我们可以通过 revertedNumber/10 去除处于中位的数字。
+    // 例如，当输入为 12321 时，在 while 循环的末尾我们可以得到 x = 12，revertedNumber = 123，
+    // 由于处于中位的数字不影响回文（它总是与自己相等），所以我们可以简单地将其去除。
+    return x == revertedNumber || x == revertedNumber / 10
+}
+~~~
+
+### 删除链表的倒数第n个节点
+
+其他实现方式就不提了，就使用快慢指针，也叫双指针的算法。
+
+（1）定义两个指针 p1 和 p2 分别指向链表头节点。
+（2）p1 前进 K 个节点，则 p1 与 p2 相距 K 个节点。
+（3）p1，p2 同时前进，每次前进 1 个节点。
+（4）当 p1 指向到达链表末尾，由于 p1 与 p2 相距 K 个节点，则 p2 指向目标节点。
+
+~~~go
+/**
+ * Definition for singly-linked list.
+ * type ListNode struct {
+ *     Val int
+ *     Next *ListNode
+ * }
+ */
+func removeNthFromEnd(head *ListNode, n int) *ListNode {
+    var temp *ListNode = new(ListNode)
+    temp.Next = head
+    var startN *ListNode = temp
+    var endN *ListNode = temp
+    for i := 0; i < n; i++ {
+        endN = endN.Next
+    }
+    for{
+        if endN.Next == nil{
+            break
+        }
+        startN = startN.Next
+        endN = endN.Next
+    }
+    startN.Next = startN.Next.Next
+    return temp.Next
+
+}
+~~~
+
