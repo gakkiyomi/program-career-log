@@ -7769,7 +7769,7 @@ git push origin --delete test  #删除远程分支s
 
 
 
-#### 服务间的通讯方
+#### 服务间的通讯方式
 
  一般是两种，**rpc,http**
 
@@ -8201,3 +8201,20 @@ data:
 ~~~
 
 2. 即可在prometheus可视化界面或者grafana看到数据了
+
+### 2020.6.25
+
+#### git 查看最近n次的提交内容
+
+>指定n为1则可以查看最近一次修改的内容
+
+~~~shell
+git log -p -n
+~~~
+
+#### 知道commit id的情况
+
+~~~shell
+git show commit_id
+~~~
+
