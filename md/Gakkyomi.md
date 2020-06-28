@@ -8218,3 +8218,10 @@ git log -p -n
 git show commit_id
 ~~~
 
+
+
+### 2020.6.28
+
+#### jvm 垃圾回收器概览
+
+![image](../images/lj.png)
