@@ -789,6 +789,66 @@ jdk1.5提供了四种线程池，通过**Executors**类来获取：
 
 ​     创建一个定长线程池，支持定时及周期性任务执行。
 
+>更新于 2020.6.25 ，通过b3log的开源项目源码中学习下ScheduledThreadPoolExecutor
+
+在solo中创建了一个用于定时任务的线程池
+
+~~~java
+    /**
+     * Cron thread pool.
+     */
+    private static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE =   Executors.newScheduledThreadPool(1);
+~~~
+
+然后通过这个线程去执行定时任务
+
+~~~java
+/**
+     * Start all cron tasks.
+     */
+    public void start() {
+        long delay = 10000;
+
+        SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(() -> {
+            try {
+                StatisticMgmtService.removeExpiredOnlineVisitor();
+            } catch (final Exception e) {
+                LOGGER.log(Level.ERROR, "Executes cron failed", e);
+            } finally {
+                Stopwatchs.release();
+            }
+        }, delay, 1000 * 60 * 10, TimeUnit.MILLISECONDS);
+        delay += 2000;
+
+        SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(() -> {
+            try {
+                Solos.reloadBlacklistIPs();
+            } catch (final Exception e) {
+                LOGGER.log(Level.ERROR, "Executes cron failed", e);
+            } finally {
+                Stopwatchs.release();
+            }
+        }, delay, 1000 * 60 * 30, TimeUnit.MILLISECONDS);
+        delay += 2000;
+
+        SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(() -> {
+            try {
+                articleMgmtService.refreshGitHub();
+                userMgmtService.refreshUSite();
+                exportService.exportHacPai();
+                exportService.exportGitHub();
+            } catch (final Exception e) {
+                LOGGER.log(Level.ERROR, "Executes cron failed", e);
+            } finally {
+                Stopwatchs.release();
+            }
+        }, delay, 1000 * 60 * 60 * 24, TimeUnit.MILLISECONDS);
+        delay += 2000;
+    }
+~~~
+
+
+
 4. SingleThreadPool 
 
 ​      创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务。
