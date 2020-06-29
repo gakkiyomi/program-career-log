@@ -7595,7 +7595,7 @@ JSONObject obj = JSONObject.parseObject(raw, Feature.OrderedField);
 #### 启动事件系统
 
 ~~~shell
-go run main.go --logfile /var/log/eventti/eventti.log --loglevel INFO --listen-jrpc 0.0.0.0:8182 --listen-api 0.0.0.0:8184 --db_username eventti --db_password r00tme --db_name eventti --db_addr 192.168.1.222:5432 --es_addr 192.168.1.146:9200 --rpc_config config.json
+go run main.go --logfile /var/log/eventti/eventti.log --loglevel INFO --listen-jrpc 0.0.0.0:8182 --listen-api 0.0.0.0:8184 --db_username eventti --db_password r00tme --db_name eventti --db_addr 192.168.1.222:5432 --es_addr 192.168.1.146:9200
 ~~~
 
 ### 2020.5.20 
@@ -7981,4 +7981,10 @@ public class TemplateRelationTree<T> {
 }
 
 ~~~
+
+
+
+### 2020.6.29
+
+#### Elasticsearch模糊查询
 
