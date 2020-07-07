@@ -8347,3 +8347,261 @@ posix 字符
 
 - (?(1).......) 回溯引用条件，只有当\1 满足的时候才进行接下来的匹配
 - (?(... ₁)....) 前后查找条件，只有当(... ₁)满足的时候 才进行接下来的匹配
+
+
+
+### 2020.6.30
+
+#### google protobuf package import遇到的坑
+
+在proto文件里，每个文件要定义**package**，一个包里的massage或者service要应用其他包下的massage时，需要将相应的包导入，这点类似与Golang语言，于此同时也面临了与Golang相同的问题，也就是包循环引用的问题。
+
+需要将b的rpc service暴露出去，但是a 引用 b，b引用a  ，这样是不能通过proto的编译的。
+
+解决办法：引入第三方c    c引用a  ,c引用b    将c暴露出去
+
+说实话 golang 的grpc服务端实现要比java服务端的优雅。
+
+
+
+### 2020.7.4
+
+#### golang IO接口
+
+>在 io 包中最重要的是两个接口：Reader 和 Writer 接口。本章所提到的各种 IO 包，都跟这两个接口有关，也就是说，只要满足这两个接口，它就可以使用 IO 包的功能。
+
+##### Reader 接口
+
+Reader 接口的定义如下：
+
+```go
+type Reader interface {
+    Read(p []byte) (n int, err error)
+}
+```
+
+
+
+官方文档中关于该接口方法的说明：
+
+> Read 将 len(p) 个字节读取到 p 中。它返回读取的字节数 n（0 <= n <= len(p)） 以及任何遇到的错误。即使 Read 返回的 n < len(p)，它也会在调用过程中占用 len(p) 个字节作为暂存空间。若可读取的数据不到 len(p) 个字节，Read 会返回可用数据，而不是等待更多数据。
+
+> 当 Read 在成功读取 n > 0 个字节后遇到一个错误或 EOF (end-of-file)，它会返回读取的字节数。它可能会同时在本次的调用中返回一个non-nil错误,或在下一次的调用中返回这个错误（且 n 为 0）。 一般情况下, Reader会返回一个非0字节数n, 若 n = len(p) 个字节从输入源的结尾处由 Read 返回，Read可能返回 err == EOF 或者 err == nil。并且之后的 Read() 都应该返回 (n:0, err:EOF)。
+
+> 调用者在考虑错误之前应当首先处理返回的数据。这样做可以正确地处理在读取一些字节后产生的 I/O 错误，同时允许EOF的出现。
+
+根据 Go 语言中关于接口和满足了接口的类型的定义（[Interface_types](http://golang.org/ref/spec#Interface_types)），我们知道 Reader 接口的方法集（[Method_sets](http://golang.org/ref/spec#Method_sets)）只包含一个 Read 方法，因此，所有实现了 Read 方法的类型都满足 io.Reader 接口，也就是说，在所有需要 io.Reader 的地方，可以传递实现了 Read() 方法的类型的实例。
+
+下面，我们通过具体例子来谈谈该接口的用法。
+
+```go
+func ReadFrom(reader io.Reader, num int) ([]byte, error) {
+	p := make([]byte, num)
+	n, err := reader.Read(p)
+	if n > 0 {
+		return p[:n], nil
+	}
+	return p, err
+}
+```
+
+ReadFrom 函数将 io.Reader 作为参数，也就是说，ReadFrom 可以从任意的地方读取数据，只要来源实现了 io.Reader 接口。比如，我们可以从标准输入、文件、字符串等读取数据，示例代码如下：
+
+```go
+// 从标准输入读取
+data, err = ReadFrom(os.Stdin, 11)
+
+// 从普通文件读取，其中 file 是 os.File 的实例
+data, err = ReadFrom(file, 9)
+
+// 从字符串读取
+data, err = ReadFrom(strings.NewReader("from string"), 12)
+```
+
+**小贴士**
+
+io.EOF 变量的定义：`var EOF = errors.New("EOF")`，是 error 类型。根据 reader 接口的说明，在 n > 0 且数据被读完了的情况下，当次返回的 error 有可能是 EOF 也有可能是 nil。
+
+##### Writer 接口
+
+Writer 接口的定义如下：
+
+```go
+type Writer interface {
+    Write(p []byte) (n int, err error)
+}
+```
+
+官方文档中关于该接口方法的说明：
+
+> Write 将 len(p) 个字节从 p 中写入到基本数据流中。它返回从 p 中被写入的字节数 n（0 <= n <= len(p)）以及任何遇到的引起写入提前停止的错误。若 Write 返回的 n < len(p)，它就必须返回一个 非nil 的错误。
+
+同样的，所有实现了Write方法的类型都实现了 io.Writer 接口。
+
+在上个例子中，我们是自己实现一个函数接收一个 io.Reader 类型的参数。这里，我们通过标准库的例子来学习。
+
+在fmt标准库中，有一组函数：Fprint/Fprintf/Fprintln，它们接收一个 io.Wrtier 类型参数（第一个参数），也就是说它们将数据格式化输出到 io.Writer 中。那么，调用这组函数时，该如何传递这个参数呢？
+
+我们以 fmt.Fprintln 为例，同时看一下 fmt.Println 函数的源码。
+
+```go
+func Println(a ...interface{}) (n int, err error) {
+	return Fprintln(os.Stdout, a...)
+}
+```
+
+
+
+- os.File 同时实现了 io.Reader 和 io.Writer
+- strings.Reader 实现了 io.Reader
+- bufio.Reader/Writer 分别实现了 io.Reader 和 io.Writer
+- bytes.Buffer 同时实现了 io.Reader 和 io.Writer
+- bytes.Reader 实现了 io.Reader
+- compress/gzip.Reader/Writer 分别实现了 io.Reader 和 io.Writer
+- crypto/cipher.StreamReader/StreamWriter 分别实现了 io.Reader 和 io.Writer
+- crypto/tls.Conn 同时实现了 io.Reader 和 io.Writer
+- encoding/csv.Reader/Writer 分别实现了 io.Reader 和 io.Writer
+- mime/multipart.Part 实现了 io.Reader
+- net/conn 分别实现了 io.Reader 和 io.Writer(Conn接口定义了Read/Write)
+
+除此之外，io 包本身也有这两个接口的实现类型。如：
+
+```go
+实现了 Reader 的类型：LimitedReader、PipeReader、SectionReader
+实现了 Writer 的类型：PipeWriter
+```
+
+以上类型中，常用的类型有：os.File、strings.Reader、bufio.Reader/Writer、bytes.Buffer、bytes.Reader
+
+##### ReaderFrom 和 WriterTo 接口
+
+**ReaderFrom** 的定义如下：
+
+```
+type ReaderFrom interface {
+    ReadFrom(r Reader) (n int64, err error)
+}
+```
+
+官方文档中关于该接口方法的说明：
+
+> ReadFrom 从 r 中读取数据，直到 EOF 或发生错误。其返回值 n 为读取的字节数。除 io.EOF 之外，在读取过程中遇到的任何错误也将被返回。
+
+> 如果 ReaderFrom 可用，Copy 函数就会使用它。
+
+注意：ReadFrom 方法不会返回 err == EOF。
+
+下面的例子简单的实现将文件中的数据全部读取（显示在标准输出）：
+
+```
+file, err := os.Open("writeAt.txt")
+if err != nil {
+    panic(err)
+}
+defer file.Close()
+writer := bufio.NewWriter(os.Stdout)
+writer.ReadFrom(file)
+writer.Flush()
+```
+
+当然，我们可以通过 ioutil 包的 ReadFile 函数获取文件全部内容。其实，跟踪一下 ioutil.ReadFile 的源码，会发现其实也是通过 ReadFrom 方法实现（用的是 bytes.Buffer，它实现了 ReaderFrom 接口）。
+
+如果不通过 ReadFrom 接口来做这件事，而是使用 io.Reader 接口，我们有两种思路：
+
+1. 先获取文件的大小（File 的 Stat 方法），之后定义一个该大小的 []byte，通过 Read 一次性读取
+2. 定义一个小的 []byte，不断的调用 Read 方法直到遇到 EOF，将所有读取到的 []byte 连接到一起
+
+这里不给出实现代码了，有兴趣的可以实现一下。
+
+**提示**
+
+通过查看 bufio.Writer 或 strings.Buffer 类型的 ReadFrom 方法实现，会发现，其实它们的实现和上面说的第 2 种思路类似。
+
+**WriterTo**的定义如下：
+
+```go
+type WriterTo interface {
+    WriteTo(w Writer) (n int64, err error)
+}
+```
+
+官方文档中关于该接口方法的说明：
+
+> WriteTo 将数据写入 w 中，直到没有数据可写或发生错误。其返回值 n 为写入的字节数。 在写入过程中遇到的任何错误也将被返回。
+
+> 如果 WriterTo 可用，Copy 函数就会使用它。
+
+读者是否发现，其实 ReaderFrom 和 WriterTo 接口的方法接收的参数是 io.Reader 和 io.Writer 类型。根据 io.Reader 和 io.Writer 接口的讲解，对该接口的使用应该可以很好的掌握。
+
+这里只提供简单的一个示例代码：将一段文本输出到标准输出
+
+```go
+reader := bytes.NewReader([]byte("Go语言中文网"))
+reader.WriteTo(os.Stdout)
+```
+
+通过 io.ReaderFrom 和 io.WriterTo 的学习，我们知道，如果这样的需求，可以考虑使用这两个接口：“一次性从某个地方读或写到某个地方去。”
+
+##### Closer接口
+
+接口定义如下：
+
+```go
+type Closer interface {
+    Close() error
+}
+```
+
+该接口比较简单，只有一个 Close() 方法，用于关闭数据流。
+
+文件 (os.File)、归档（压缩包）、数据库连接、Socket 等需要手动关闭的资源都实现了 Closer 接口。
+
+实际编程中，经常将 Close 方法的调用放在 defer 语句中。
+
+
+
+##### ByteReader 和 ByteWriter
+
+通过名称大概也能猜出这组接口的用途：读或写一个字节。接口定义如下：
+
+```
+type ByteReader interface {
+    ReadByte() (c byte, err error)
+}
+
+type ByteWriter interface {
+    WriteByte(c byte) error
+}
+```
+
+在标准库中，有如下类型实现了 io.ByteReader 或 io.ByteWriter:
+
+- bufio.Reader/Writer 分别实现了io.ByteReader 和 io.ByteWriter
+- bytes.Buffer 同时实现了 io.ByteReader 和 io.ByteWriter
+- bytes.Reader 实现了 io.ByteReader
+- strings.Reader 实现了 io.ByteReader
+
+接下来的示例中，我们通过 bytes.Buffer 来一次读取或写入一个字节（主要代码）：
+
+```go
+var ch byte
+fmt.Scanf("%c\n", &ch)
+
+buffer := new(bytes.Buffer)
+err := buffer.WriteByte(ch)
+if err == nil {
+	fmt.Println("写入一个字节成功！准备读取该字节……")
+	newCh, _ := buffer.ReadByte()
+	fmt.Printf("读取的字节：%c\n", newCh)
+} else {
+	fmt.Println("写入错误")
+}
+```
+
+程序从标准输入接收一个字节（ASCII 字符），调用 buffer 的 WriteByte 将该字节写入 buffer 中，之后通过 ReadByte 读取该字节。
+
+一般地，我们不会使用 bytes.Buffer 来一次读取或写入一个字节。那么，这两个接口有哪些用处呢？
+
+在标准库 encoding/binary 中，实现[Google-ProtoBuf](https://code.google.com/p/protobuf/)中的 Varints 读取，[ReadVarint](http://docs.studygolang.com/pkg/encoding/binary/#ReadVarint) 就需要一个 io.ByteReader 类型的参数，也就是说，它需要一个字节一个字节的读取。关于 encoding/binary 包在后面会详细介绍。
+
+在标准库 image/jpeg 中，[Encode](http://docs.studygolang.com/pkg/image/jpeg/#Encode)函数的内部实现使用了 ByteWriter 写入一个字节。
