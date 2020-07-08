@@ -1372,3 +1372,13 @@ if err == nil {
 在标准库 encoding/binary 中，实现[Google-ProtoBuf](https://code.google.com/p/protobuf/)中的 Varints 读取，[ReadVarint](http://docs.studygolang.com/pkg/encoding/binary/#ReadVarint) 就需要一个 io.ByteReader 类型的参数，也就是说，它需要一个字节一个字节的读取。关于 encoding/binary 包在后面会详细介绍。
 
 在标准库 image/jpeg 中，[Encode](http://docs.studygolang.com/pkg/image/jpeg/#Encode)函数的内部实现使用了 ByteWriter 写入一个字节。
+
+
+
+#### 使用gorm遇到的坑
+
+>今天在使用gorm做orm时，表1使用外键1关联表2，外键2关联表3，然后做插入时，插入表1的一条记录时会将附带的表2，表3
+>
+>的记录也插入，但如果插入的记录有字段做了唯一性约束的话，如果跟以前的记录发生冲突时会插入不进去直接报错。
+
+解决方法明天更新,回家还是不要想这些问题了
