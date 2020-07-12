@@ -451,3 +451,79 @@ end
 ```
 show firewall policy central-snat-map
 ```
+
+#### fortinet Configuring NAT
+
+##### SNAT
+
+![img](/Users/fangcong/source/study-log/md/../images/fortinetSNAT.png)
+
+> Source Network Address Translation (SNAT) is an option available in Transparent mode and configurable in CLI only, using the following commands:
+
+```fortran
+config firewall ippool
+	edit "nat-out"
+        set endip 192.168.183.48
+        set startip 192.168.183.48
+        set interface vlan18_p3
+	next
+end
+
+config firewall policy
+	edit 3
+        set srcintf "vlan160_p2"
+        set dstintf "vlan18_p3"
+        set srcaddr "all"
+        set dstaddr "all"
+        set action accept
+        set ippool enable
+        set poolname "nat-out"
+        set schedule "always"
+        set service "ANY"
+        set nat enable
+	next
+end
+```
+
+##### DNAT
+
+> The following example shows how to configure Destination Network Address Translation (DNAT) using a virtual IP on a FortiGatein Transparent Mode:
+
+```fortran
+config firewall vip
+    edit "vip1"
+        set extip 192.168.183.48
+        set extintf "vlan160_p2"
+        set mappedip 192.168.182.78
+	next
+end
+
+config firewall policy
+	edit 4
+        set srcintf "vlan160_p2"
+        set dstintf "vlan18_p3"
+        set srcaddr "all"
+        set dstaddr "vip1"
+        set action accept
+        set schedule "always"
+        set service "ANY"
+	next
+end
+```
+
+##### Static NAT
+
+> In Static NAT one internal IP address is always mapped to the same public IP address.
+>
+> In FortiGate firewall configurations this is most commonly done with the use of Virtual IP addressing.
+>
+> An example would be if you had a small range of IP addresses assigned to you by your ISP and you wished to use one of those IP address exclusively for a particular server such as an email server.
+>
+> Say the internal address of the Email server was 192.168.12.25 and the Public IP address from your assigned addresses range from 256.16.32.65 to 256.16.32.127. Many readers will notice that because one of the numbers is above 255 that this is not a real Public IP address. The Address that you have assigned to the interface connected to your ISP is 256.16.32.66, with 256.16.32.65 being the remote gateway. You wish to use the address of 256.16.32.70 exclusively for your email server.
+>
+> When using a Virtual IP address you set the external IP address of 256.16.32.70 to map to 192.168.12.25. This means that any traffic being sent to the public address of 256.16.32.70 will be directed to the internal computer at the address of 192.168.12.25
+>
+> When using a Virtual IP address, this will have the added function that when ever traffic goes from 192.168.12.25 to the Internet it will appear to the recipient of that traffic at the other end as coming from 256.16.32.70.
+>
+> You should note that if you use Virtual IP addressing with the Port Forwarding enabled you do not get this reciprocal effect and must use IP pools to make sure that the outbound traffic uses the specified IP address.
+
