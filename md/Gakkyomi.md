@@ -5999,7 +5999,7 @@ ListNode* findKthTail(ListNode *pHead, int K){
 
 如图：
 
-![img](https://mmbiz.qpic.cn/mmbiz_png/D67peceibeIRpYVlurzMr7TptB2p63l9b2WbTMy1Yp5W1ge9R6s2GrVRDDun6EwiaibVLg4lqEjebu9UN03ZMPBSg/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
+![img](../images/huan1.jpg)
 
 ###### 穷举比较法
 

@@ -223,3 +223,83 @@ interface GigabitEthernet0/0/0
 ```
  Error:Incomplete command found at '^' position.
 ```
+
+
+
+#### huawei usg Configuring NAT
+
+##### Static NAT (1对1)
+
+使用static nat 来进行目的地址转换
+
+设备：cisco asa 192.168.1.204
+
+接口：![img](/Users/fangcong/source/study-log/md/../images/image2020-3-17_16-55-19.png)
+
+![img](/Users/fangcong/source/study-log/md/../images/image2020-3-17_16-55-31.png)
+
+设备:huawei usg 192.168.1.205
+
+接口：![img](/Users/fangcong/source/study-log/md/../images/image2020-3-17_16-57-38.png)
+
+拓扑：![img](/Users/fangcong/source/study-log/md/../images/image2020-3-17_16-58-8.png)
+
+```shell
+security-policy
+rule name untrust_2_dmz_c0dbd
+description create by NAP 97e5819c-2c2c-435b-9e29-5e40d8715f9a
+source-zone untrust
+destination-zone dmz
+source-address address-set WS_172.16.205.1_32
+destination-address address-set ws_10.1.206.1
+service Any
+action permit
+```
+
+~~~
+nat server untrust_2_dmz_b9fe1 global 12.1.214.33 inside 10.1.206.1
+~~~
+
+cisco设备上设置路由:
+
+![img](/Users/fangcong/source/study-log/md/../images/image2020-3-17_17-1-37.png)
+
+在cisco上ping 12.1.214.33
+
+转换结果
+
+![img](/Users/fangcong/source/study-log/md/../images/image2020-3-17_17-4-35.png)
+
+
+
+##### Source NAT
+
+源NAT策略用于实现内网主机使用私网地址访问Internet。系统会将内网主机报文的源IP由私网地址转换为公网地址。在配置时，转换前的源地址应选择私网地址或地址组（可多选），转换后的源地址可以使用NAT地址池或使用报文出接口的公网IP地址。
+
+```
+nat-policy
+[USG6000V2-policy-nat]
+rule name snat1
+[USG6000V2-policy-nat-rule-snat1]
+description test
+[USG6000V2-policy-nat-rule-snat1]
+destination-zone untrust
+[USG6000V2-policy-nat-rule-snat1]
+source-zone trust
+[USG6000V2-policy-nat-rule-snat1]
+source-address address-set WS_192.168.1.11_32
+[USG6000V2-policy-nat-rule-snat1]
+destination-address address-set WS_2.3.1.120_32
+[USG6000V2-policy-nat-rule-snat1]
+service TCP_241
+[USG6000V2-policy-nat-rule-snat1]
+action nat address-group test2            //test2为地址池里面的地址
+[USG6000V2-policy-nat-rule-snat1]
+```
+
+
+
+##### Destination NAT
+
+![img](/Users/fangcong/source/study-log/md/../images/image2020-2-28_16-17-37.png)
+

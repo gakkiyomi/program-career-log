@@ -1008,3 +1008,104 @@ forkJoinPool.submit(() -> list.parallelStream()
 ).get();
 ~~~
 
+
+
+### Timer
+
+在开发中，我们经常需要一些周期性的操作，例如每隔几分钟就进行某一项操作。这时候我们就要去设置个定时器，Java中最方便、最高效的实现方式是用java.util.Timer工具类，再通过调度java.util.TimerTask任务。
+
+Timer是一种工具，线程用其安排以后在后台线程中执行的任务。可安排任务执行一次，或者定期重复执行。实际上是个线程，定时调度所拥有的TimerTasks。
+
+  TimerTask是一个抽象类，它的子类由 Timer 安排为一次执行或重复执行的任务。实际上就是一个拥有run方法的类，需要定时执行的代码放到run方法体内。
+
+
+
+~~~java
+Timer timer = Timer(true);  //设置为true 则是守护线程
+   
+TimerTask task = new TimerTask() {   
+    public void run() {   
+        ... //每次需要执行的代码放到这里面。   
+    }   
+};   
+   
+//以下是几种常用调度task的方法：   
+   
+timer.schedule(task, time);   
+// time为Date类型：在指定时间执行一次。   
+   
+timer.schedule(task, firstTime, period);   
+// firstTime为Date类型,period为long   
+// 从firstTime时刻开始，每隔period毫秒执行一次。   
+   
+timer.schedule(task, delay)   
+// delay 为long类型：从现在起过delay毫秒执行一次   
+   
+timer.schedule(task, delay, period)   
+// delay为long,period为long：从现在起过delay毫秒以后，每隔period   
+// 毫秒执行一次。
+~~~
+
+
+
+通过b3log的开源项目**symphony**来学习下Timer的使用
+
+~~~java
+// 向 Rhy 发送统计数据，仅发送站点名称、URL。用于 Sym 使用统计，如果不想发送请移除该代码
+        new Timer(true).schedule(new TimerTask() {
+            @Override
+            public void run() {
+                final String symURL = Latkes.getServePath();
+                if (Strings.isIPv4(symURL)) {
+                    return;
+                }
+
+                HttpURLConnection httpConn = null;
+                try {
+                    final BeanManager beanManager = BeanManager.getInstance();
+                    final OptionQueryService optionQueryService = beanManager.getReference(OptionQueryService.class);
+
+                    final JSONObject statistic = optionQueryService.getStatistic();
+                    final int articleCount = statistic.optInt(Option.ID_C_STATISTIC_ARTICLE_COUNT);
+                    if (articleCount < 66) {
+                        return;
+                    }
+
+                    final LangPropsService langPropsService = beanManager.getReference(LangPropsService.class);
+
+                    httpConn = (HttpURLConnection) new URL("https://rhythm.b3log.org/sym").openConnection();
+                    httpConn.setConnectTimeout(10000);
+                    httpConn.setReadTimeout(10000);
+                    httpConn.setDoOutput(true);
+                    httpConn.setRequestMethod("POST");
+                    httpConn.setRequestProperty(Common.USER_AGENT, USER_AGENT_BOT);
+
+                    httpConn.connect();
+
+                    try (final OutputStream outputStream = httpConn.getOutputStream()) {
+                        final JSONObject sym = new JSONObject();
+                        sym.put("symURL", symURL);
+                        sym.put("symTitle", langPropsService.get("symphonyLabel", Latkes.getLocale()));
+
+                        IOUtils.write(sym.toString(), outputStream, "UTF-8");
+                        outputStream.flush();
+                    }
+
+                    httpConn.getResponseCode();
+                } catch (final Exception e) {
+                    // ignore
+                } finally {
+                    if (null != httpConn) {
+                        try {
+                            httpConn.disconnect();
+                        } catch (final Exception e) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+        }, 1000 * 60 * 60 * 2, 1000 * 60 * 60 * 12);
+~~~
+
+
+

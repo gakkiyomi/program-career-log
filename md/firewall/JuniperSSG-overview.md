@@ -163,3 +163,35 @@ ssg245(policy:125)-> set dst-address abb2 //目的地址  可以多个
 ssg245(policy:125)-> set service ser //服务   可以多个
 ~~~
 
+#### JuniperSSG Configuring NAT
+
+##### SNAT
+
+juniper ssg 使用 dip 来进行 snat  
+
+  命令：get dip all 可查看所有已定义的dip
+
+![img](/Users/fangcong/source/study-log/md/../images/ssgSNAT.png)
+
+dip 与接口绑定 ，设置接口时可以定义dip ，并且必须与接口ip在同一网段。DMZ 绑定的接口是 ethernet0/1,在开snat策略时 dip 必须是目的zone绑定接口的dip  
+
+命令：
+
+```shell
+set interface ethernet0/1 dip 9 10.1.245.220 10.1.245.220  
+```
+
+```
+set policy id 10029 name Trust_2_DMZ_8a515 from Trust to DMZ HOST-192.168.1.33_32 HOST-10.1.245.133_32 TELNET nat src dip-id 9  permit
+```
+
+##### DNAT
+
+~~~fortran
+set address Trust HOST-192.168.1.33_32 192.168.1.33/32   //源地址
+set address DMZ HOST-10.1.245.133_32 10.1.245.133/32  //转换后的地址 (真实地址）
+set address DMZ HOST-2.2.2.11_32 2.2.2.11/32  //转换前的地址
+set route 2.2.2.11/32 int ethernet0/1    //必须加上路由  否则不通
+set policy id 10025 name Trust_2_DMZ_b17ec from Trust to DMZ HOST-192.168.1.33_32 HOST-2.2.2.11_32 TELNET nat dst ip 10.1.245.133 permit
+~~~
+

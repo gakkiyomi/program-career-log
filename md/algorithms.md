@@ -247,3 +247,212 @@ func removeNthFromEnd(head *ListNode, n int) *ListNode {
 }
 ~~~
 
+### 链表中存在环问题
+
+>单链表中的环是指链表末尾的节点的 next 指针不为 NULL ，而是指向了链表中的某个节点，导致链表中出现了环形结构
+
+如图：
+
+![img](../images/huan1.jpg)
+
+###### 穷举比较法
+
+>（1）遍历链表，记录已访问的节点。
+>（2）将当前节点与之前以及访问过的节点比较，若有相同节点则有环。
+>否则，不存在环。
+
+这种穷举比较思想简单，但是效率过于低下，尤其是当链表节点数目较多，在进行比较时花费大量时间，时间复杂度大致在 O(n^2)。
+
+
+
+###### 哈希缓存法
+
+>（1）首先创建一个以节点 ID 为键的 HashSe t集合，用来存储曾经遍历过的节点。
+>（2）从头节点开始，依次遍历单链表的每一个节点。
+>（3）每遍历到一个新节点，就用新节点和 HashSet 集合当中存储的节点作比较，如果发现 HashSet 当中存在相同节点 ID，则说明链表有环，如果 HashSet 当中不存在相同的节点 ID，就把这个新节点 ID 存入 HashSet ，之后进入下一节点，继续重复刚才的操作。
+
+假设从链表头节点到入环点的距离是 a ，链表的环长是 r 。而每一次 HashSet 查找元素的时间复杂度是 O(1), 所以总体的时间复杂度是 `1 * ( a + r ) = a + r`，可以简单理解为 O(n) 。而算法的空间复杂度还是 a + r - 1，可以简单地理解成 O(n) 。
+
+
+
+###### 快慢指针法
+
+>（1）定义两个指针分别为 slow，fast，并且将指针均指向链表头节点。
+>（2）规定，slow 指针每次前进 1 个节点，fast 指针每次前进两个节点。
+>（3）当 slow 与 fast 相等，且二者均不为空，则链表存在环。
+
+![img](../images/huan2.jpg)
+
+![img](../images/huan3.jpg)
+
+![img](../images/huan4.jpg)
+
+若链表中存在环，则快慢指针必然能在环中相遇。这就好比在环形跑道中进行龟兔赛跑。由于兔子速度大于乌龟速度，则必然会出现兔子与乌龟再次相遇情况。因此，当出现快慢指针相等时，且二者不为NULL，则表明链表存在环。
+
+~~~c
+bool isExistLoop(ListNode* pHead)  {  
+    ListNode* fast;//慢指针，每次前进一个节点
+    ListNode* slow;//快指针，每次前进2个节点 
+    slow = fast = pHead ;  //两个指针均指向链表头节点
+    //当没有到达链表结尾，则继续前进
+    while (slow != NULL && fast -> next != NULL)  {  
+        slow = slow -> next ; //慢指针前进一个节点
+        fast = fast -> next -> next ; //快指针前进两个节点
+        if (slow == fast)  //若两个指针相遇，且均不为NULL则存在环
+            return true ;  
+    }  
+    //到达末尾仍然没有相遇，则不存在环
+    return false ;  
+}  
+~~~
+
+
+
+##### 定位环入口
+
+>slow 指针每次前进一个节点，故 slow 与 fast 相遇时，slow 还没有遍历完整个链表。设 slow 走过节点数为 s，fast 走过节点数为 2s。设环入口点距离头节点为 a，slow 与 fast 首次相遇点距离入口点为 b，环的长度为 r。
+>则有：
+>s = a + b;
+>2s = n * r + a + b; n 代表fast指针已经在环中循环的圈数。
+>则推出：
+>s = n * r; 意味着slow指针走过的长度为环的长度整数倍。
+>
+>若链表头节点到环的末尾节点度为 L，slow 与 fast 的相遇节点距离环入口节点为 X。
+>则有：
+>a+X = s = n * r = (n - 1) * r + (L - a);
+>a = (n - 1) * r + (L - a - X);
+>上述等式可以看出：
+>从 slow 与 fast 相遇点出发一个指针 p1，请进 (L - a - X) 步，则此指针到达入口节点。同时指针 p2 从头结点出发，前进 a 步。当 p1 与 p2 相遇时，此时 p1 与 p2 均指向入口节点。
+>
+>例如图3.1所示链表：
+>slow 走过节点 s = 6；
+>fast 走过节点 2s = 12；
+>环入口节点据流头节点 a = 3；
+>相遇点距离头节点 X = 3；
+>L = 8；
+>r = 6；
+>可以得出 a = (n - 1) * r + (L - a - X)结果成立。
+
+![img](../images/huan5.jpg)
+
+![img](../images/huan6.jpg)
+
+~~~c
+//找到环中的相遇节点
+ListNode* getMeetingNode(ListNode* pHead) // 假设为带头节点的单链表
+{
+    ListNode* fast;//慢指针，每次前进一个节点
+    ListNode* slow;//快指针，每次前进2个节点 
+    slow = fast = pHead ;  //两个指针均指向链表头节点
+    //当没有到达链表结尾，则继续前进
+    while (slow != NULL && fast -> next != NULL){  
+        slow = slow -> next ; //慢指针前进一个节点
+        fast = fast -> next -> next ; //快指针前进两个节点
+        if (slow == fast)  //若两个指针相遇，且均不为NULL则存在环
+            return slow;  
+    }  
+
+    //到达末尾仍然没有相遇，则不存在环
+    return NULL ;
+}
+//找出环的入口节点
+ListNode* getEntryNodeOfLoop(ListNode* pHead){
+    ListNode* meetingNode = getMeetingNode(pHead); // 先找出环中的相遇节点
+    if (meetingNode == NULL)
+        return NULL;
+    ListNode* p1 = meetingNode;
+    ListNode* p2 = pHead;
+    while (p1 != p2) // p1和p2以相同的速度向前移动，当p2指向环的入口节点时，p1已经围绕着环走了n圈又回到了入口节点。
+    {
+        p1 = p1->next;
+        p2 = p2->next;
+    }
+    //返回入口节点
+    return p1;
+}
+~~~
+
+
+
+##### 计算环的长度
+
+>找到了 slow 与 fast 的相遇节点，令 solw 与 fast 指针从相遇节点出发，按照之前的前进规则，当 slow 与fast 再次相遇时，slow 走过的长度正好为环的长度。
+
+~~~c
+int getLoopLength(ListNode* head){
+    ListNode* slow = head;
+    ListNode* fast = head;
+    while ( fast && fast->next ){
+        slow = slow->next;
+        fast = fast->next->next;
+        if ( slow == fast )//第一次相遇
+            break;
+    }
+    //slow与fast继续前进
+    slow = slow->next;
+    fast = fast->next->next;
+    int length = 1;       //环长度
+    while ( fast != slow )//再次相遇
+    {
+        slow = slow->next;
+        fast = fast->next->next;
+        length ++;        //累加
+    }
+    //当slow与fast再次相遇，得到环长度
+    return length;
+}
+~~~
+
+##### 有序列表合并
+
+>将两个有序链表合并为一个新的有序链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。
+
+（1）对空链表存在的情况进行处理，假如 pHead1 为空则返回 pHead2 ，pHead2 为空则返回 pHead1。（两个都为空此情况在pHead1为空已经被拦截）
+（2）在两个链表无空链表的情况下确定第一个结点，比较链表1和链表2的第一个结点的值，将值小的结点保存下来为合并后的第一个结点。并且把第一个结点为最小的链表向后移动一个元素。
+（3）继续在剩下的元素中选择小的值，连接到第一个结点后面，并不断next将值小的结点连接到第一个结点后面，直到某一个链表为空。
+（4）当两个链表长度不一致时，也就是比较完成后其中一个链表为空，此时需要把另外一个链表剩下的元素都连接到第一个结点的后面。
+
+~~~c
+ListNode* mergeTwoOrderedLists(ListNode* pHead1, ListNode* pHead2){
+    ListNode* pTail = NULL;//指向新链表的最后一个结点 pTail->next去连接
+    ListNode* newHead = NULL;//指向合并后链表第一个结点
+    if (NULL == pHead1){
+        return pHead2;
+    }else if(NULL == pHead2){
+        return pHead1;
+    }else{
+        //确定头指针
+        if ( pHead1->data < pHead2->data){
+            newHead = pHead1;
+            pHead1 = pHead1->next;//指向链表的第二个结点
+        }else{
+            newHead = pHead2;
+            pHead2 = pHead2->next;
+        }
+        pTail = newHead;//指向第一个结点
+        while ( pHead1 && pHead2) {
+            if ( pHead1->data <= pHead2->data ){
+                pTail->next = pHead1;  
+                pHead1 = pHead1->next;
+            }else {
+                pTail->next = pHead2;
+                pHead2 = pHead2->next;
+            }
+            pTail = pTail->next;
+
+        }
+        if(NULL == pHead1){
+            pTail->next = pHead2;
+        }else if(NULL == pHead2){
+            pTail->next = pHead1;
+        }
+        return newHead;
+}
+~~~
+
+
+
+##### 删除链表中节点，要求时间复杂度为O(1)
+
+单链表删除节点中，最普通的方法就是遍历链表，复杂度为O(n)。
+如果我们把删除节点的下一个结点的值赋值给要删除的结点，然后删除这个结点，这相当于删除了需要删除的那个结点。因为我们很容易获取到删除节点的下一个节点，所以复杂度只需要O(1)。

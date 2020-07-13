@@ -38,10 +38,16 @@ git remote update origin --prune
 
 
 
-### git 本地关联远程分支
+### git 本地仓库关联远程仓库
 
 ```shell
  git remote add origin https://github.com/gakkiyomi/study-log.git
+```
+
+### git 本地分支跟踪远程分支
+
+```shell
+ git branch --set-upstream-to=origin/master
 ```
 
 
@@ -85,4 +91,37 @@ git log -p -n
 ```shell
 git show commit_id
 ```
+
+
+
+### git 查看所有分支的提交修改
+
+~~~shell
+git log --all --graph --decorate
+~~~
+
+
+
+### git 合并冲突
+
+ 需要将dev1分支的内容合并到master分支
+
+~~~shell
+git checkout master #切换到master分支
+git merge dev1
+~~~
+
+在将dev2合到master分支
+
+~~~shell
+git merge dev2
+#此时如果出现情况，不想合并，可以使用一下命令
+git merge --abort #返回合并前的状态
+#再次执行合并
+git merge dev2
+#冲突,手动解决
+vim xxx.txt
+git add .
+git merge --continue
+~~~
 

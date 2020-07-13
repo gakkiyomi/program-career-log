@@ -1,48 +1,84 @@
 # 计算机网络基础
 
-### 基础
+### TCP/IP四层协议 
 
-- **TCP/IP四层协议**
+- 应用层          ```SMTP,FTP,HTTP,DND,TELNET,RPC等等```
 
-  - 应用层          ```SMTP,FTP,HTTP,DND,TELNET,RPC等等```
+- 传输层          ```TCP,UDP```
 
-  - 传输层          ```TCP,UDP```
+- 网络层          ```IP,ICMP,ARP,RAPP```
 
-  - 网络层          ```IP,ICMP,ARP,RAPP```
+- 网络接口     ```DATA LINK ```
 
-  - 网络接口     ```DATA LINK ```
-
-    ![img](https://images2015.cnblogs.com/blog/764050/201509/764050-20150904095142060-1017190812.gif)
-
-  ARP (**地址解析协议**) 
-
-  ​		**根据[IP地址](https://baike.baidu.com/item/IP地址)获取[物理地址](https://baike.baidu.com/item/物理地址/2129)的一个[TCP/IP协议](https://baike.baidu.com/item/TCP%2FIP协议)。[主机](https://baike.baidu.com/item/主机/455151)发送信息时将包含目标IP地址的ARP请求广播到网络上的所有主机，并接收返回消息，以此确定目标的物理地址**
-
-  RAPP(**逆地址解析协议**) 
-
-  ​		**功能和ARP协议相对，其将局域网中某个主机的物理地址转换为IP地址**
-
-  ---
-
-  
-
-+ **TCP的三次握手和四次挥手**
-
-  ![img](https://images2015.cnblogs.com/blog/764050/201509/764050-20150904110008388-1768388886.gif)
+  ![img](https://images2015.cnblogs.com/blog/764050/201509/764050-20150904095142060-1017190812.gif)
 
 
 
-+ **DNS协议**
+#### TCP的三次握手和四次挥手
 
-  DNS是域名系统(DomainNameSystem)的缩写，该系统用于命名组织到域层次结构中的计算机和网络服务，**可以简单地理解为将URL转换为IP地址**。域名是由圆点分开一串单词或缩写组成的，每一个域名都对应一个惟一的IP地址，在Internet上域名与IP地址之间是一一对应的，DNS就是进行域名解析的服务器。DNS命名用于Internet等TCP/IP网络中，通过用户友好的名称查找计算机和服务。
+![img](https://images2015.cnblogs.com/blog/764050/201509/764050-20150904110008388-1768388886.gif)
 
-+ **NAT协议**
+**注：seq**:"sequance"序列号；**ack**:"acknowledge"确认号；**SYN**:"synchronize"请求同步标志；**；ACK**:"acknowledge"确认标志"**；****FIN**："Finally"结束标志。
 
-  NAT网络地址转换(Network Address Translation)属接入广域网(WAN)技术，是一种将私有（保留）地址转化为合法IP地址的转换技术，它被广泛应用于各种类型Internet接入方式和各种类型的网络中。原因很简单，NAT不仅完美地解决了lP地址不足的问题，而且还能够有效地避免来自网络外部的攻击，隐藏并保护网络内部的计算机。
+**TCP连接建立过程：**首先Client端发送连接请求报文，Server段接受连接后回复ACK报文，并为这次连接分配资源。Client端接收到ACK报文后也向Server段发生ACK报文，并分配资源，这样TCP连接就建立了。
 
-+ **DHCP协议**
+**TCP连接断开过程：**假设Client端发起中断连接请求，也就是发送FIN报文。Server端接到FIN报文后，意思是说"我Client端没有数据要发给你了"，但是如果你还有数据没有发送完成，则不必急着关闭Socket，可以继续发送数据。所以你先发送ACK，"告诉Client端，你的请求我收到了，但是我还没准备好，请继续你等我的消息"。这个时候Client端就进入FIN_WAIT状态，继续等待Server端的FIN报文。当Server端确定数据已发送完成，则向Client端发送FIN报文，"告诉Client端，好了，我这边数据发完了，准备好关闭连接了"。Client端收到FIN报文后，"就知道可以关闭连接了，但是他还是不相信网络，怕Server端不知道要关闭，所以发送ACK后进入TIME_WAIT状态，如果Server端没有收到ACK则可以重传。“，Server端收到ACK后，"就知道可以断开连接了"。Client端等待了2MSL后依然没有收到回复，则证明Server端已正常关闭，那好，我Client端也可以关闭连接了。Ok，TCP连接就这样关闭了！
 
-  DHCP动态主机设置协议（Dynamic Host Configuration Protocol）是一个局域网的网络协议，使用UDP协议工作，主要有两个用途：给内部网络或网络服务供应商自动分配IP地址，给用户或者内部网络管理员作为对所有计算机作中央管理的手段。
+
+
+#### 为什么要三次挥手?
+
+在只有两次“握手”的情形下，假设Client想跟Server建立连接，但是却因为中途连接请求的数据报丢失了，故Client端不得不重新发送一遍；这个时候Server端仅收到一个连接请求，因此可以正常的建立连接。但是，有时候Client端重新发送请求不是因为数据报丢失了，而是有可能数据传输过程因为网络并发量很大在某结点被阻塞了，这种情形下Server端将先后收到2次请求，并持续等待两个Client请求向他发送数据...问题就在这里，Cient端实际上只有一次请求，而Server端却有2个响应，极端的情况可能由于Client端多次重新发送请求数据而导致Server端最后建立了N多个响应在等待，因而造成极大的资源浪费！所以，“三次握手”很有必要！
+
+#### 为什么要四次挥手?
+
+试想一下，假如现在你是客户端你想断开跟Server的所有连接该怎么做？第一步，你自己先停止向Server端发送数据，并等待Server的回复。但事情还没有完，虽然你自身不往Server发送数据了，但是因为你们之前已经建立好平等的连接了，所以此时他也有主动权向你发送数据；故Server端还得终止主动向你发送数据，并等待你的确认。其实，说白了就是保证双方的一个合约的完整执行！
+
+___
+
+### UDP协议
+
+**UDP用户数据报协议，是面向无连接的通讯协议，UDP数据包括目的端口号和源端口号信息，由于通讯不需要连接，所以可以实现广播发送。UDP通讯时不需要接收方确认，属于不可靠的传输，可能会出现丢包现象，实际应用中要求程序员编程验证。**
+
+
+
+UDP与TCP位于同一层，但它不管数据包的顺序、错误或重发。因此，UDP不被应用于那些使用虚电路的面向连接的服务，UDP主要用于那些面向查询---应答的服务，例如NFS。相对于FTP或Telnet，这些服务需要交换的信息量较小。
+
+
+
+每个UDP报文分UDP报头和UDP数据区两部分。报头由四个16位长（2字节）字段组成，分别说明该报文的源端口、目的端口、报文长度以及校验值。UDP报头由4个域组成，其中每个域各占用2个字节，具体如下：
+
+
+
+（1）源端口号；
+
+（2）目标端口号；
+
+（3）数据报长度；
+
+（4）校验值。
+
+
+
+使用UDP协议包括：TFTP（简单文件传输协议）、SNMP（简单网络管理协议）、DNS（域名解析协议）、NFS、BOOTP。
+
+
+
+**TCP** **与** **UDP** **的区别：**TCP是面向连接的，可靠的字节流服务；UDP是面向无连接的，不可靠的数据报服务。
+
+
+
+### DNS协议
+
+DNS是域名系统(DomainNameSystem)的缩写，该系统用于命名组织到域层次结构中的计算机和网络服务，**可以简单地理解为将URL转换为IP地址**。域名是由圆点分开一串单词或缩写组成的，每一个域名都对应一个惟一的IP地址，在Internet上域名与IP地址之间是一一对应的，DNS就是进行域名解析的服务器。DNS命名用于Internet等TCP/IP网络中，通过用户友好的名称查找计算机和服务。
+
+### NAT协议
+
+NAT网络地址转换(Network Address Translation)属接入广域网(WAN)技术，是一种将私有（保留）地址转化为合法IP地址的转换技术，它被广泛应用于各种类型Internet接入方式和各种类型的网络中。原因很简单，NAT不仅完美地解决了lP地址不足的问题，而且还能够有效地避免来自网络外部的攻击，隐藏并保护网络内部的计算机。
+
+### DHCP协议
+
+DHCP动态主机设置协议（Dynamic Host Configuration Protocol）是一个局域网的网络协议，使用UDP协议工作，主要有两个用途：给内部网络或网络服务供应商自动分配IP地址，给用户或者内部网络管理员作为对所有计算机作中央管理的手段。
 
 ---
 
@@ -65,15 +101,7 @@
     + IP地址二进制&子网掩码二进制 = 网络地址二进制 --->十进制
     + IP地址二进制&(~子网掩码二进制) = 主机地址
     
-    
-
-+ **路由选择协议**
-
-​           常见的路由选择协议有：RIP协议、OSPF协议。
-
-　　        **RIP协议** ：底层是贝尔曼福特算法，它选择路由的度量标准（metric)是跳数，最大跳数              是15跳，如果大于15跳，它就会丢弃数据包。
-
-　　        **OSPF协议** ：Open Shortest Path First开放式最短路径优先，底层是迪杰斯特拉算法，  是链路状态路由选择协议，它选择路由的度量标准是带宽，延迟。
+  
 
 + **路由器**
 
@@ -137,194 +165,66 @@
   9. 2层mac地址查找
   10. 发送数据包
 
-#### fortinet Configuring NAT
+### ARP/RARP协议
 
-##### SNAT
-
-![img](..\images\fortinetSNAT.png)
-
-> Source Network Address Translation (SNAT) is an option available in Transparent mode and configurable in CLI only, using the following commands:
-
-```fortran
-config firewall ippool
-	edit "nat-out"
-        set endip 192.168.183.48
-        set startip 192.168.183.48
-        set interface vlan18_p3
-	next
-end
-
-config firewall policy
-	edit 3
-        set srcintf "vlan160_p2"
-        set dstintf "vlan18_p3"
-        set srcaddr "all"
-        set dstaddr "all"
-        set action accept
-        set ippool enable
-        set poolname "nat-out"
-        set schedule "always"
-        set service "ANY"
-        set nat enable
-	next
-end
-```
-
-##### DNAT
-
-> The following example shows how to configure Destination Network Address Translation (DNAT) using a virtual IP on a FortiGatein Transparent Mode:
-
-```fortran
-config firewall vip
-    edit "vip1"
-        set extip 192.168.183.48
-        set extintf "vlan160_p2"
-        set mappedip 192.168.182.78
-	next
-end
-
-config firewall policy
-	edit 4
-        set srcintf "vlan160_p2"
-        set dstintf "vlan18_p3"
-        set srcaddr "all"
-        set dstaddr "vip1"
-        set action accept
-        set schedule "always"
-        set service "ANY"
-	next
-end
-```
-
-##### Static NAT
-
-> In Static NAT one internal IP address is always mapped to the same public IP address.
->
-> In FortiGate firewall configurations this is most commonly done with the use of Virtual IP addressing.
->
-> An example would be if you had a small range of IP addresses assigned to you by your ISP and you wished to use one of those IP address exclusively for a particular server such as an email server.
->
-> Say the internal address of the Email server was 192.168.12.25 and the Public IP address from your assigned addresses range from 256.16.32.65 to 256.16.32.127. Many readers will notice that because one of the numbers is above 255 that this is not a real Public IP address. The Address that you have assigned to the interface connected to your ISP is 256.16.32.66, with 256.16.32.65 being the remote gateway. You wish to use the address of 256.16.32.70 exclusively for your email server.
->
-> When using a Virtual IP address you set the external IP address of 256.16.32.70 to map to 192.168.12.25. This means that any traffic being sent to the public address of 256.16.32.70 will be directed to the internal computer at the address of 192.168.12.25
->
-> When using a Virtual IP address, this will have the added function that when ever traffic goes from 192.168.12.25 to the Internet it will appear to the recipient of that traffic at the other end as coming from 256.16.32.70.
->
-> You should note that if you use Virtual IP addressing with the Port Forwarding enabled you do not get this reciprocal effect and must use IP pools to make sure that the outbound traffic uses the specified IP address.
-
-#### JuniperSSG Configuring NAT
-
-##### SNAT
-
-juniper ssg 使用 dip 来进行 snat  
-
-  命令：get dip all 可查看所有已定义的dip
-
-![img](..\images\ssgSNAT.png)
-
-dip 与接口绑定 ，设置接口时可以定义dip ，并且必须与接口ip在同一网段。DMZ 绑定的接口是 ethernet0/1,在开snat策略时 dip 必须是目的zone绑定接口的dip  
-
-命令：
-
-```shell
-set interface ethernet0/1 dip 9 10.1.245.220 10.1.245.220  
-```
-
-```
-set policy id 10029 name Trust_2_DMZ_8a515 from Trust to DMZ HOST-192.168.1.33_32 HOST-10.1.245.133_32 TELNET nat src dip-id 9  permit
-```
-
-##### DNAT
-
-~~~fortran
-set address Trust HOST-192.168.1.33_32 192.168.1.33/32   //源地址
-set address DMZ HOST-10.1.245.133_32 10.1.245.133/32  //转换后的地址 (真实地址）
-set address DMZ HOST-2.2.2.11_32 2.2.2.11/32  //转换前的地址
-set route 2.2.2.11/32 int ethernet0/1    //必须加上路由  否则不通
-set policy id 10025 name Trust_2_DMZ_b17ec from Trust to DMZ HOST-192.168.1.33_32 HOST-2.2.2.11_32 TELNET nat dst ip 10.1.245.133 permit
-~~~
+>**地址解析协议，即ARP（Address Resolution Protocol），是根据IP地址获取物理地址的一个TCP/IP协议。**主机发送信息时将包含目标IP地址的ARP请求广播到网络上的所有主机，并接收返回消息，以此确定目标的物理地址；收到返回消息后将该IP地址和物理地址存入本机ARP缓存中并保留一定时间，下次请求时直接查询ARP缓存以节约资源。地址解析协议是建立在网络中各个主机互相信任的基础上的，网络上的主机可以自主发送ARP应答消息，其他主机收到应答报文时不会检测该报文的真实性就会将其记入本机ARP缓存；由此攻击者就可以向某一主机发送伪ARP应答报文，使其发送的信息无法到达预期的主机或到达错误的主机，这就构成了一个ARP欺骗。**ARP命令可用于查询本机ARP缓存中IP地址和MAC地址的对应关系、添加或删除静态对应关系等。**
 
 
 
-#### huawei usg Configuring NAT
+ARP工作流程举例：
 
-##### Static NAT (1对1)
+主机A的IP地址为192.168.1.1，MAC地址为0A-11-22-33-44-01；
 
-使用static nat 来进行目的地址转换
+主机B的IP地址为192.168.1.2，MAC地址为0A-11-22-33-44-02；
 
-设备：cisco asa 192.168.1.204
+当主机A要与主机B通信时，地址解析协议可以将主机B的IP地址（192.168.1.2）解析成主机B的MAC地址，以下为工作流程：
 
-接口：![img](..\images\image2020-3-17_16-55-19.png)
+（1）根据主机A上的路由表内容，IP确定用于访问主机B的转发IP地址是192.168.1.2。然后A主机在自己的本地ARP缓存中检查主机B的匹配MAC地址。
 
-![img](..\images\image2020-3-17_16-55-31.png)
+（2）如果主机A在ARP缓存中没有找到映射，它将询问192.168.1.2的硬件地址，从而将ARP请求帧广播到本地网络上的所有主机。源主机A的IP地址和MAC地址都包括在ARP请求中。本地网络上的每台主机都接收到ARP请求并且检查是否与自己的IP地址匹配。如果主机发现请求的IP地址与自己的IP地址不匹配，它将丢弃ARP请求。
 
-设备:huawei usg 192.168.1.205
+（3）主机B确定ARP请求中的IP地址与自己的IP地址匹配，则将主机A的IP地址和MAC地址映射添加到本地ARP缓存中。
 
-接口：![img](..\images\image2020-3-17_16-57-38.png)
+（4）主机B将包含其MAC地址的ARP回复消息直接发送回主机A。
 
-拓扑：![img](..\images\image2020-3-17_16-58-8.png)
-
-```shell
-security-policy
-rule name untrust_2_dmz_c0dbd
-description create by NAP 97e5819c-2c2c-435b-9e29-5e40d8715f9a
-source-zone untrust
-destination-zone dmz
-source-address address-set WS_172.16.205.1_32
-destination-address address-set ws_10.1.206.1
-service Any
-action permit
-```
-
-~~~
-nat server untrust_2_dmz_b9fe1 global 12.1.214.33 inside 10.1.206.1
-~~~
-
-cisco设备上设置路由:
-
-![img](..\images\image2020-3-17_17-1-37.png)
-
-在cisco上ping 12.1.214.33
-
-转换结果
-
-![img](..\images\image2020-3-17_17-4-35.png)
+（5）当主机A收到从主机B发来的ARP回复消息时，会用主机B的IP和MAC地址映射更新ARP缓存。本机缓存是有生存期的，生存期结束后，将再次重复上面的过程。主机B的MAC地址一旦确定，主机A就能向主机B发送IP通信了。
 
 
 
-##### Source NAT
+**逆地址解析协议，即RARP，功能和ARP协议相对，其将局域网中某个主机的物理地址转换为IP地址**，比如局域网中有一台主机只知道物理地址而不知道IP地址，那么可以通过RARP协议发出征求自身IP地址的广播请求，然后由RARP服务器负责回答。
 
-源NAT策略用于实现内网主机使用私网地址访问Internet。系统会将内网主机报文的源IP由私网地址转换为公网地址。在配置时，转换前的源地址应选择私网地址或地址组（可多选），转换后的源地址可以使用NAT地址池或使用报文出接口的公网IP地址。
+RARP协议工作流程：
 
-```
-nat-policy
-[USG6000V2-policy-nat]
-rule name snat1
-[USG6000V2-policy-nat-rule-snat1]
-description test
-[USG6000V2-policy-nat-rule-snat1]
-destination-zone untrust
-[USG6000V2-policy-nat-rule-snat1]
-source-zone trust
-[USG6000V2-policy-nat-rule-snat1]
-source-address address-set WS_192.168.1.11_32
-[USG6000V2-policy-nat-rule-snat1]
-destination-address address-set WS_2.3.1.120_32
-[USG6000V2-policy-nat-rule-snat1]
-service TCP_241
-[USG6000V2-policy-nat-rule-snat1]
-action nat address-group test2            //test2为地址池里面的地址
-[USG6000V2-policy-nat-rule-snat1]
-```
+（1）给主机发送一个本地的RARP广播，在此广播包中，声明自己的MAC地址并且请求任何收到此请求的RARP服务器分配一个IP地址；
+
+（2）本地网段上的RARP服务器收到此请求后，检查其RARP列表，查找该MAC地址对应的IP地址；
+
+（3）如果存在，RARP服务器就给源主机发送一个响应数据包并将此IP地址提供给对方主机使用；
+
+（4）如果不存在，RARP服务器对此不做任何的响应；
+
+（5）源主机收到从RARP服务器的响应信息，就利用得到的IP地址进行通讯；如果一直没有收到RARP服务器的响应信息，表示初始化失败。
 
 
 
-##### Destination NAT
+### 路由选择协议
 
-![img](..\images\image2020-2-28_16-17-37.png)
+常见的路由选择协议有：RIP协议、OSPF协议。
 
+**RIP协议** ：底层是贝尔曼福特算法，它选择路由的度量标准（metric)是跳数，最大跳数是15跳，如果大于15跳，它就会丢弃数据包。
+
+**OSPF协议** ：Open Shortest Path First开放式最短路径优先，底层是迪杰斯特拉算法，是链路状态路由选择协议，它选择路由的度量标准是带宽，延迟。
 
   
 
+### **在浏览器中输入** **www.baidu.com** **后执行的全部过程**
 
-  
+现在假设如果我们在客户端（客户端）浏览器中输入http://www.baidu.com,而baidu.com为要访问的服务器（服务器），下面详细分析客户端为了访问服务器而执行的一系列关于协议的操作：
+
+1）客户端浏览器通过DNS解析到www.baidu.com的IP地址220.181.27.48，通过这个IP地址找到客户端到服务器的路径。客户端浏览器发起一个HTTP会话到220.161.27.48，然后通过TCP进行封装数据包，输入到网络层。
+
+2）在客户端的传输层，把HTTP会话请求分成报文段，添加源和目的端口，如服务器使用80端口监听客户端的请求，客户端由系统随机选择一个端口如5000，与服务器进行交换，服务器把相应的请求返回给客户端的5000端口。然后使用IP层的IP地址查找目的端。
+
+3）客户端的网络层不用关系应用层或者传输层的东西，主要做的是通过查找路由表确定如何到达服务器，期间可能经过多个路由器，这些都是由路由器来完成的工作，不作过多的描述，无非就是通过查找路由表决定通过那个路径到达服务器。
+
+4）客户端的链路层，包通过链路层发送到路由器，通过邻居协议查找给定IP地址的MAC地址，然后发送ARP请求查找目的地址，如果得到回应后就可以使用ARP的请求应答交换的IP数据包现在就可以传输了，然后发送IP数据包到达服务器的地址。
