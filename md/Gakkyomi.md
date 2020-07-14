@@ -898,7 +898,7 @@ public class Context {
 public class StrategyPatternDemo { //测试
    public static void main(String[] args) {
       Context context = new Context.Builder()
-          .setStrategy(new OperationSubstract())
+          .setStrategy(new OperationAdd())
           .builder();
        System.out.println("10 + 5 = " + context.executeStrategy(10, 5));
        
@@ -966,7 +966,7 @@ public class ProxyImage implements Image{
 
 周末学习计划
 
-	#### java
+#### java
 
 ##### springboot 整合 rabbitmq
 
