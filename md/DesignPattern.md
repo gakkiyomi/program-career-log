@@ -1014,3 +1014,131 @@ public class CommandPatternDemo {
 我们创建抽象类 *AbstractLogger*，带有详细的日志记录级别。然后我们创建三种类型的记录器，都扩展了 *AbstractLogger*。每个记录器消息的级别是否属于自己的级别，如果是则相应地打印出来，否则将不打印并把消息传给下一个记录器。
 
 ![责任链模式的 UML 图](https://www.runoob.com/wp-content/uploads/2014/08/chain_pattern_uml_diagram.jpg)
+
+~~~java
+步骤 1
+创建抽象的记录器类。
+
+AbstractLogger.java
+public abstract class AbstractLogger {
+   public static int INFO = 1;
+   public static int DEBUG = 2;
+   public static int ERROR = 3;
+ 
+   protected int level;
+ 
+   //责任链中的下一个元素
+   protected AbstractLogger nextLogger;
+ 
+   public void setNextLogger(AbstractLogger nextLogger){
+      this.nextLogger = nextLogger;
+   }
+ 
+   public void logMessage(int level, String message){
+      if(this.level <= level){
+         write(message);
+      }
+      if(nextLogger !=null){
+         nextLogger.logMessage(level, message);
+      }
+   }
+ 
+   abstract protected void write(String message);
+   
+}
+步骤 2
+创建扩展了该记录器类的实体类。
+
+ConsoleLogger.java
+public class ConsoleLogger extends AbstractLogger {
+ 
+   public ConsoleLogger(int level){
+      this.level = level;
+   }
+ 
+   @Override
+   protected void write(String message) {    
+      System.out.println("Standard Console::Logger: " + message);
+   }
+}
+ErrorLogger.java
+public class ErrorLogger extends AbstractLogger {
+ 
+   public ErrorLogger(int level){
+      this.level = level;
+   }
+ 
+   @Override
+   protected void write(String message) {    
+      System.out.println("Error Console::Logger: " + message);
+   }
+}
+FileLogger.java
+public class FileLogger extends AbstractLogger {
+ 
+   public FileLogger(int level){
+      this.level = level;
+   }
+ 
+   @Override
+   protected void write(String message) {    
+      System.out.println("File::Logger: " + message);
+   }
+}
+步骤 3
+创建不同类型的记录器。赋予它们不同的错误级别，并在每个记录器中设置下一个记录器。每个记录器中的下一个记录器代表的是链的一部分。
+
+ChainPatternDemo.java
+public class ChainPatternDemo {
+   
+   private static AbstractLogger getChainOfLoggers(){
+ 
+      AbstractLogger errorLogger = new ErrorLogger(AbstractLogger.ERROR);
+      AbstractLogger fileLogger = new FileLogger(AbstractLogger.DEBUG);
+      AbstractLogger consoleLogger = new ConsoleLogger(AbstractLogger.INFO);
+ 
+      errorLogger.setNextLogger(fileLogger);
+      fileLogger.setNextLogger(consoleLogger);
+ 
+      return errorLogger;  
+   }
+ 
+   public static void main(String[] args) {
+      AbstractLogger loggerChain = getChainOfLoggers();
+ 
+      loggerChain.logMessage(AbstractLogger.INFO, "This is an information.");
+ 
+      loggerChain.logMessage(AbstractLogger.DEBUG, 
+         "This is a debug level information.");
+ 
+      loggerChain.logMessage(AbstractLogger.ERROR, 
+         "This is an error information.");
+   }
+}
+~~~
+
+
+
+### 解释器模式
+
+>解释器模式（Interpreter Pattern）提供了评估语言的语法或表达式的方式，它属于行为型模式。这种模式实现了一个表达式接口，该接口解释一个特定的上下文。这种模式被用在 SQL 解析、符号处理引擎等。
+
+**意图：**给定一个语言，定义它的文法表示，并定义一个解释器，这个解释器使用该标识来解释语言中的句子。
+
+**主要解决：**对于一些固定文法构建一个解释句子的解释器。
+
+**何时使用：**如果一种特定类型的问题发生的频率足够高，那么可能就值得将该问题的各个实例表述为一个简单语言中的句子。这样就可以构建一个解释器，该解释器通过解释这些句子来解决该问题。
+
+**如何解决：**构建语法树，定义终结符与非终结符。
+
+**关键代码：**构建环境类，包含解释器之外的一些全局信息，一般是 HashMap。
+
+**应用实例：**编译器、运算表达式计算。
+
+**优点：** 1、可扩展性比较好，灵活。 2、增加了新的解释表达式的方式。 3、易于实现简单文法。
+
+**缺点：** 1、可利用场景比较少。 2、对于复杂的文法比较难维护。 3、解释器模式会引起类膨胀。 4、解释器模式采用递归调用方法。
+
+**使用场景：** 1、可以将一个需要解释执行的语言中的句子表示为一个抽象语法树。 2、一些重复出现的问题可以用一种简单的语言来进行表达。 3、一个简单语法需要解释的场景。
+
+**注意事项：**可利用场景比较少，JAVA 中如果碰到可以用 expression4J 代替。
