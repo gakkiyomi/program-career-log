@@ -96,13 +96,19 @@ RETURN p
 match (n) where 5 in n.ip return n
 ```
 
-#### 修改节点属性
+##### 修改节点属性
 
 ```cypher
 MATCH (a:Ta{names:"afaf"}) 
 SET a.names="a"
 return a
 ```
+
+##### 修改节点属性名称
+
+~~~cypher
+match(n) set n.propertyNew=n.propertyOld remove n.propertyOld
+~~~
 
 ##### 查询多label多条件
 
