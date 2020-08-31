@@ -568,6 +568,64 @@ func main() {
 }
 ```
 
+指针的强制类型转换需要用到**unsafe**包中的函数实现
+
+~~~golang
+package main
+
+import "unsafe"
+import "fmt"
+
+func main() {
+    var a int =10
+    var b *int =&a
+    var c *int64 = (*int64)(unsafe.Pointer(b))
+    fmt.Println(*c)
+}
+~~~
+
+**以上是强制类型转换，golang不像java和c++那样有隐式类型转换，也就是说int -> float 也需要强转**
+
+
+
+##### 类型断言
+
+~~~golang
+package main
+
+import "fmt"
+
+func main() {
+    var a interface{} =10
+    switch a.(type){
+    case int:
+            fmt.Println("int")
+    case float32:
+            fmt.Println("string")
+    }
+}
+~~~
+
+~~~golang
+package main
+
+import "fmt"
+
+func main() {
+    var a interface{} =10
+    t,ok:= a.(int)
+    if ok{
+        fmt.Println("int",t)
+    }
+    t2,ok:= a.(float32)
+    if ok{
+        fmt.Println("float32",t2)
+    }
+}
+~~~
+
+`t,ok:= a.(int)`有两个返回值,第一个是对应类型的值,第二个是bool类型的,类型判断是否正确。
+
 ##### interface
 
 Go 语言提供了另外一种数据类型即接口，它把所有的具有共性的方法定义在一起，任何其他类型只要实现了这些方法就是实现了这个接口。
