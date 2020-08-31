@@ -179,3 +179,24 @@ git log --graph --decorate --oneline --simplify-by-decoration --all
 --simplify-by-decoration 只显示被branch或tag引用的commit
 
 --all 表示显示所有的branch，这里也可以选择，比如我指向显示分支ABC的关系，则将--all替换为branchA branchB branchC**
+
+
+
+##### 切换远程仓库地址
+
+1. 直接修改
+
+~~~shell
+git remote set-url origin 新的项目路径
+~~~
+
+2. 先删除远程地址，然后添加新的仓库地址
+
+~~~shell
+git remote rm origin
+git remote add origin url
+~~~
+
+3. 修改配置文件
+
+修改 **.git**目录下config文件中的url
