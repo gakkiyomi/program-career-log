@@ -1,6 +1,7 @@
 #!/bin/sh
 currTime=$(date +"%Y-%m-%d %T")
-str="feat ${currTime}"
+message=$1
+str="${message} by ${currTime}"
 echo git add start
 git add .
 echo git commit start
