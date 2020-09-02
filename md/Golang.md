@@ -1625,3 +1625,229 @@ func main() {
 }
 ```
 
+
+
+### sync.WaitGroup
+
+在有多个goroutine 工作线程工作时，我们main线程需要等待工作线程完成才能结束时,这个时候就需要**sync.WaitGroup**
+
+效果与java中的**CountDownLatch**相同
+
+`WaitGroup` 对象内部有一个计数器，最初从0开始，它有三个方法：`Add(), Done(), Wait()` 用来控制计数器的数量。`Add(n)` 把计数器设置为`n` ，`Done()` 每次把计数器`-1` ，`wait()` 会阻塞代码的运行，直到计数器地值减为0。
+
+~~~go
+func main() {
+    wg := sync.WaitGroup{}
+    wg.Add(100)
+    for i := 0; i < 100; i++ {
+        go func(i int) {
+            fmt.Println(i)
+            wg.Done()
+        }(i)
+    }
+    wg.Wait()
+}
+~~~
+
+这里首先把`wg` 计数设置为100， 每个for循环运行完毕都把计数器减一，主函数中使用`Wait()` 一直阻塞，直到wg为零——也就是所有的100个for循环都运行完毕。相对于使用管道来说，`WaitGroup` 轻巧了许多。
+
+**note:**
+
+ 	1.  计数器不能为负值
+
+2. WaitGroup对象不是一个引用类型 (**一定要通过指针传值，不然进程会进入死锁状态**)
+
+
+
+### Context
+
+`context`是`Go`并发编程中常用到一种编程模式。
+
+context常用的使用姿势：
+
+1. web编程中，一个请求对应多个goroutine之间的数据交互
+2. 超时控制
+3. 上下文控制
+
+**context接口**
+
+~~~go
+type Context interface {
+
+    Deadline() (deadline time.Time, ok bool)
+
+    Done() <-chan struct{}
+
+    Err() error
+
+    Value(key interface{}) interface{}
+}
+~~~
+
+`Context`接口包含四个方法：
+
+| 字段     | 含义                                                         |
+| -------- | ------------------------------------------------------------ |
+| Deadline | 返回一个time.Time，表示当前Context应该结束的时间，如果没有设定期限，将返回`ok == false`。 |
+| Done     | 当Context被取消或者超时时候返回的一个close的channel，告诉给context相关的函数要停止当前工作然后返回了。(这个有点像全局广播) |
+| Err      | context被取消的原因                                          |
+| Value    | context实现共享数据存储的地方，是协程安全的（还记得之前有说过[map是不安全](https://blog.csdn.net/u011957758/article/details/82846609)的？所以遇到map的结构,如果不是sync.Map,需要加锁来进行操作） |
+
+官方提供了4个Context实现
+
+| 实现      | 结构体                                                       | 作用                                                         |
+| --------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| emptyCtx  | type emptyCtx int                                            | 完全空的Context，实现的函数也都是返回nil，仅仅只是实现了Context的接口 |
+| cancelCtx | type cancelCtx struct {     Context     mu    sync.Mutex     done chan struct{}          children map[canceler]struct{}     err error     } | 继承自Context，同时也实现了canceler接口                      |
+| timerCtx  | type timerCtx struct {     cancelCtx     timer *time.Timer // Under cancelCtx.mu.     deadline time.Time } | 继承自**cancelCtx**，增加了timeout机制                       |
+| valueCtx  | type valueCtx struct {     Context     key, val interface{} } | 存储键值对的数据                                             |
+
+为了更方便的创建Context，包里头定义了Background来作为所有Context的根，它是一个emptyCtx的实例。
+
+~~~go
+var (
+    background = new(emptyCtx)
+    todo       = new(emptyCtx)
+)
+
+func Background() Context {
+    return background
+}
+~~~
+
+
+
+你可以认为所有的Context是树的结构，Background是树的根，当任一Context被取消的时候，那么继承它的Context 都将被回收。
+
+#### WithCancel
+
+`WithCancel`函数用来创建一个可取消的`context`，即`cancelCtx`类型的`context`。`WithCancel`返回一个`context`和一个`CancelFunc`，调用`CancelFunc`即可触发`cancel`操作。
+
+吃汉堡比赛，奥特曼每秒吃0-5个，计算吃到10的用时
+
+example:
+
+~~~go
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	eatNum := chiHanBao(ctx)
+	for n := range eatNum {
+		if n >= 10 {
+			cancel()
+			break
+		}
+	}
+
+	fmt.Println("正在统计结果。。。")
+	time.Sleep(1 * time.Second)
+}
+
+func chiHanBao(ctx context.Context) <-chan int {
+	c := make(chan int)
+	// 个数
+	n := 0
+	// 时间
+	t := 0
+	go func() {
+		for {
+			//time.Sleep(time.Second)
+			select {
+			case <-ctx.Done():
+				fmt.Printf("耗时 %d 秒，吃了 %d 个汉堡 \n", t, n)
+				return
+			case c <- n:
+				incr := rand.Intn(5)
+				n += incr
+				if n >= 10 {
+					n = 10
+				}
+				t++
+				fmt.Printf("我吃了 %d 个汉堡\n", n)
+			}
+		}
+	}()
+
+	return c
+}
+~~~
+
+result:
+
+~~~go
+我吃了 1 个汉堡
+我吃了 3 个汉堡
+我吃了 5 个汉堡
+我吃了 9 个汉堡
+我吃了 10 个汉堡
+正在统计结果。。。
+耗时 6 秒，吃了 10 个汉堡 
+~~~
+
+#### WithTimeout
+
+执行一段代码，控制**执行到某个时间**的时候，整个程序结束。
+
+~~~go
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	chiHanBao(ctx)
+	defer cancel()
+}
+
+func chiHanBao(ctx context.Context) {
+	n := 0
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("stop \n")
+			return
+		default:
+			incr := rand.Intn(5)
+			n += incr
+			fmt.Printf("我吃了 %d 个汉堡\n", n)
+		}
+		time.Sleep(time.Second)
+	}
+}
+~~~
+
+
+
+#### WithValue
+
+携带关键信息，为全链路提供线索，比如接入elk等系统，需要来一个trace_id，那WithValue就非常适合做这个事。
+
+~~~go
+func main() {
+	ctx := context.WithValue(context.Background(), "trace_id", "88888888")
+	// 携带session到后面的程序中去
+	ctx = context.WithValue(ctx, "session", 1)
+
+	process(ctx)
+}
+
+func process(ctx context.Context) {
+	session, ok := ctx.Value("session").(int)
+	fmt.Println(ok)
+	if !ok {
+		fmt.Println("something wrong")
+		return
+	}
+
+	if session != 1 {
+		fmt.Println("session 未通过")
+		return
+	}
+
+	traceID := ctx.Value("trace_id").(string)
+	fmt.Println("traceID:", traceID, "-session:", session)
+}
+~~~
+
+**note:**
+
+**Context要是全链路函数的第一个参数**。
+
+总结：
+
+​	`context`主要用于父子任务之间的同步取消信号，本质上是一种协程调度的方式。另外在使用`context`时有两点值得注意：上游任务仅仅使用`context`通知下游任务不再需要，但不会直接干涉和中断下游任务的执行，由下游任务自行决定后续的处理操作，也就是说`context`的取消操作是无侵入的；`context`是线程安全的，因为`context`本身是不可变的（`immutable`），因此可以放心地在多个协程中传递使用。

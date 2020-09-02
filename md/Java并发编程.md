@@ -1109,3 +1109,49 @@ timer.schedule(task, delay, period)
 
 
 
+### Springboot Async 异步方法
+
+本质是使用多线程来达到异步的效果，当主线程执行到当前异步函数，则会由线程池(可以自己指定所用的线程池)分配一个新的线程去执行，主线程直接返回
+
+~~~java
+@SpringBootApplication
+@EnableAsync  //添加上此注解 开启异步方法支持
+@EnableNeo4jRepositories
+@EnableSkyCloudGlobalResponse
+public class CmdbApiApplication
+~~~
+
+~~~java
+@Configuration
+@EnableAsync
+public class AsyncConfiguration
+{
+    @Bean(name = "asyncExecutor") //自定义线程池
+    public Executor asyncExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(20);
+        executor.setMaxPoolSize(50);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("DomAsyncThread-");
+        executor.initialize();
+        return executor;
+    }
+}
+~~~
+
+~~~java
+@Async("asyncExecutor") //将此方法标注为异步方法，开启线程去执行
+    public void uploadExcelAsync(MultipartFile file, String username) throws Exception {
+        LOGGER.info("async import device from excel and send websocket ...");
+        JSONArray array = uploadExcel(file, username);
+        JSONObject[] arr = array.toArray(new JSONObject[1]);
+        for (int pos = 0; pos < arr.length; pos += 2000) {
+            int length = pos + 2000 <= arr.length ? 2000 : arr.length - pos;
+            JSONObject[] brr = new JSONObject[length];
+            System.arraycopy(arr, pos, brr, 0, length);
+            String msg = String.format("用户 [%s] 通过excel导入 %s 个设备", username, length);
+            sendEvent(username, msg, brr);
+        }
+    }
+~~~
+
