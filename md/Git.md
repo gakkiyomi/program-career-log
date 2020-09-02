@@ -178,11 +178,11 @@ git log --graph --decorate --oneline --simplify-by-decoration --all
 
 --simplify-by-decoration 只显示被branch或tag引用的commit
 
---all 表示显示所有的branch，这里也可以选择，比如我指向显示分支ABC的关系，则将--all替换为branchA branchB branchC**
+--all 表示显示所有的branch，这里也可以选择，比如我指向显示分支ABC的关系，则将--all替换为**branchA branchB branchC**
 
 
 
-##### 切换远程仓库地址
+### 切换远程仓库地址
 
 1. 直接修改
 
@@ -200,3 +200,18 @@ git remote add origin url
 3. 修改配置文件
 
 修改 **.git**目录下config文件中的url
+
+
+
+### 全局修改用户名
+
+~~~shell
+git config --local(global) user.name 'gakkiyomi'
+~~~
+
+### 仓库级(全局)修改用户邮箱
+
+~~~shell
+git config --local(global) user.email 'gakkiyomi@gmail.com'
+~~~
+

@@ -7,9 +7,9 @@
 pg_dump -U postgres nap > nap.sql
 
 #导入
-drop database testdb; #删除原来的库
+drop database nap; #删除原来的库
 
-CREATE DATABASE testdb;
+CREATE DATABASE nap;
 
 psql -U postgres -d nap -f nap.sql
 ```
