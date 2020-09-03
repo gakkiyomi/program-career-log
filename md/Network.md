@@ -18,7 +18,7 @@
 
 ![img](https://images2015.cnblogs.com/blog/764050/201509/764050-20150904110008388-1768388886.gif)
 
-**注：seq**:"sequance"序列号；**ack**:"acknowledge"确认号；**SYN**:"synchronize"请求同步标志；**；ACK**:"acknowledge"确认标志"**；****FIN**："Finally"结束标志。
+**注：seq**:"sequance"序列号；**ack**:"acknowledge"确认号；**SYN**:"synchronize"请求同步标志；**；ACK**:"acknowledge"确认标志"；**FIN**："Finally"结束标志。
 
 **TCP连接建立过程：**首先Client端发送连接请求报文，Server段接受连接后回复ACK报文，并为这次连接分配资源。Client端接收到ACK报文后也向Server段发生ACK报文，并分配资源，这样TCP连接就建立了。
 
@@ -102,14 +102,13 @@ DHCP动态主机设置协议（Dynamic Host Configuration Protocol）是一个�
     + IP地址二进制&(~子网掩码二进制) = 主机地址
     
   
-
 + **路由器**
 
   + 路由器的实质是一种将网络进行互联的专用计算机，路由器在TCP/IP中又称为网关。
 
   + 下图是一个简单的的路由器结构
 
-    ![img](http://image109.360doc.com/DownloadImg/2018/09/2817/145527554_2_20180928050311661)
+    ![img](..\images\route.jpg)
     
     
     
