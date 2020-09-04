@@ -1890,3 +1890,95 @@ func process(ctx context.Context) {
 总结：
 
 ​	`context`主要用于父子任务之间的同步取消信号，本质上是一种协程调度的方式。另外在使用`context`时有两点值得注意：上游任务仅仅使用`context`通知下游任务不再需要，但不会直接干涉和中断下游任务的执行，由下游任务自行决定后续的处理操作，也就是说`context`的取消操作是无侵入的；`context`是线程安全的，因为`context`本身是不可变的（`immutable`），因此可以放心地在多个协程中传递使用。
+
+
+
+### golang 操作xml类型文件
+
+>etree包是一个轻量级的纯go包，它以元素树的形式表示XML。它的设计灵感来自Python [ElementTree](http://docs.python.org/2/library/xml.etree.elementtree.html) 模块。
+>
+>该软件包的一些功能和特性：
+>
+>- 将XML文档表示为元素树，以便于遍历。
+>- 从头开始导入，序列化，修改或创建XML文档。
+>- 向文件，字节片，字符串和io接口读写XML。
+>- 使用轻量级的类似XPath的查询API执行简单或复杂的搜索。
+>- 使用空格或制表符自动缩进XML，以提高可读性。
+>- 完全实施；仅取决于标准的go库。
+>- 构建在go [encoding / xml](http://golang.org/pkg/encoding/xml) 包之上。
+
+~~~golang
+import "github.com/beevik/etree"
+~~~
+
+
+
+创建文档
+
+~~~go
+doc := etree.NewDocument()
+doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
+doc.CreateProcInst("xml-stylesheet", `type="text/xsl" href="style.xsl"`)
+
+people := doc.CreateElement("People")
+people.CreateComment("These are all known people")
+
+jon := people.CreateElement("Person")
+jon.CreateAttr("name", "Jon")
+
+sally := people.CreateElement("Person")
+sally.CreateAttr("name", "Sally")
+
+doc.Indent(2)
+doc.WriteTo(os.Stdout)
+~~~
+
+Output:
+
+~~~xml
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="style.xsl"?>
+<People>
+  <!--These are all known people-->
+  <Person name="Jon"/>
+  <Person name="Sally"/>
+</People>
+~~~
+
+读取文件
+
+```go
+doc := etree.NewDocument()
+if err := doc.ReadFromFile("bookstore.xml"); err != nil {
+    panic(err)
+}
+```
+
+也可以从字符串或者字节数组或者从流中读取数据到一个Document对象
+
+
+
+也支持xpath表达式进行选取元素
+
+**(但值得注意的是，盗版就是盗版，不如python正版库，也许是我自己不会用 TnT)**
+
+python
+
+~~~python
+span_list =root.xpath("//div[@id='list']/dl/dd/a/@href")
+        for span in span_list:
+
+            self.get_context(self.go_url("https://www.biquge.com.cn/"+span))
+~~~
+
+golang
+
+~~~go
+span_list := doc.FindElements(`//div[@id='list']/dl/dd/a`) //这里写上@href就匹配不到
+	for _, t := range span_list {
+		span := t.SelectAttr("href").Value
+	}
+~~~
+
+地址: https://github.com/beevik/etree
+
