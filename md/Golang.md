@@ -1538,6 +1538,45 @@ WriteFile 函数的签名如下：
 
 > WriteFile 将data写入filename文件中，当文件不存在时会根据perm指定的权限进行创建一个,文件存在时会先清空文件内容。对于 perm 参数，我们一般可以指定为：0666，具体含义 os 包中讲解。
 
+demo 将爬虫返回的网页存入demo.html中
+
+~~~go
+func (request *Request) root() {
+	req, _ := http.NewRequest("GET", request.url, nil)
+	req.Header.Set("user-agent", rand_ua())
+	req.Header.Set("Host", "www.biquge.com.cn")
+	req.Header.Add("Accept-Charset", "utf-8")
+	resp, err := (&http.Client{}).Do(req)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 200 {
+
+		respByte, _ := ioutil.ReadAll(resp.Body)
+		temp := string(respByte)
+		fmt.Println(temp)
+		path := "./demo.html"
+		err := ioutil.WriteFile(path, []byte(temp), 0666)
+
+		if err != nil {
+			panic(err)
+		}
+		/*if err := request.rootDoc.ReadFromString(temp); err != nil {
+			fmt.Println(err.Error())
+			return
+		}*/
+
+	} else {
+		fmt.Println("request error status_code:" + strconv.Itoa(resp.StatusCode))
+		return
+	}
+}
+~~~
+
+
+
 **小提示**
 
 ReadFile 源码中先获取了文件的大小，当大小 < 1e9 时，才会用到文件的大小。按源码中注释的说法是 FileInfo 不会很精确地得到文件大小。
