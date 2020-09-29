@@ -456,3 +456,94 @@ ListNode* mergeTwoOrderedLists(ListNode* pHead1, ListNode* pHead2){
 
 单链表删除节点中，最普通的方法就是遍历链表，复杂度为O(n)。
 如果我们把删除节点的下一个结点的值赋值给要删除的结点，然后删除这个结点，这相当于删除了需要删除的那个结点。因为我们很容易获取到删除节点的下一个节点，所以复杂度只需要O(1)。
+
+
+
+### 有效的括号
+
+>给定一个只包括 '('，')'，'{'，'}'，'['，']' 的字符串，判断字符串是否有效。
+>
+>有效字符串需满足：
+>
+>左括号必须用相同类型的右括号闭合。
+>左括号必须以正确的顺序闭合。
+>注意空字符串可被认为是有效字符串。
+
+思路：成对出现，可以用栈+hash来解决
+
+~~~java
+class Solution {
+    public boolean isValid(String s) {
+        if(s.equals("") || s.contains(" ") || s.length() %2 !=0) return false;
+
+        Map<Character, Character> pairs = new HashMap<Character, Character>() {{
+            put(')', '(');
+            put(']', '[');
+            put('}', '{');
+        }};
+        LinkedList<Character> stack = new LinkedList();
+        for(int i = 0 ; i < s.length(); i ++ ){
+            char c = s.charAt(i);
+            if(pairs.containsKey(c)){
+                if(stack.isEmpty() || stack.peek() != pairs.get(c)){
+                    return false;
+                }
+                stack.pop();
+            } else {
+               stack.push(c);
+            }
+        }
+
+        return stack.isEmpty();
+    }
+}
+~~~
+
+
+
+### 字符串的排列
+
+>输入一个字符串，打印出该字符串中字符的所有排列。
+>
+> 你可以以任意顺序返回这个字符串数组，但里面不能有重复元素。
+>
+>
+
+**示例:**
+
+```
+输入：s = "abc"
+输出：["abc","acb","bac","bca","cab","cba"]
+```
+
+思路，通过递归进行求解
+
+~~~java
+class Solution {
+        HashSet<String> res = new HashSet();
+        public String[] permutation(String s) {
+            if (s.length() == 0) return new String[]{};
+            boolean[] flag = new boolean[s.length()];   //用来控制当前index是否已用 aab 则为false
+            DG(s,"",flag);
+            String[] result=new String[res.size()];
+            return res.toArray(result);
+        }
+
+
+
+        public void DG(String s,String temp ,boolean[] flag){
+            if (s.length() == temp.length()) {
+                res.add(temp);
+                return;
+            }
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if (flag[i])continue;
+                flag[i] = true;
+                DG(s, temp + c, flag);
+                flag[i] = false;
+            }
+        }
+    }
+~~~
+

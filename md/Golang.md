@@ -1982,3 +1982,31 @@ span_list := doc.FindElements(`//div[@id='list']/dl/dd/a`) //这里写上@href�
 
 地址: https://github.com/beevik/etree
 
+
+
+### go设置阿里云代理
+
+```shell
+GOPROXY=https://mirrors.aliyun.com/goproxy/
+```
+
+如果上面的不生效 直接执行
+
+~~~shell
+GOPROXY=https://goproxy.cn go get ./...
+~~~
+
+
+
+### go关闭验证包的有效性
+
+```shell
+go env -w GOSUMDB=off
+```
+
+### 更新依赖包
+
+```shell
+GOPROXY=direct go get -u github.com/sky-cloud-tec/proto
+```
+
