@@ -669,6 +669,47 @@ func InsertionSort(source []int) {
 
 ![img](https://pic2.zhimg.com/50/v2-ec81c80107fb8acfbf47ec9341b77d0d_hd.webp)
 
+~~~go
+//SelectionSort is the realization of quick sort
+func QuickSort(source []int) {
+	recursionSort(source, 0, len(source)-1)
+}
+
+func recursionSort(source []int, left, right int) {
+	if left < right {
+		index := partition(source, left, right)
+		recursionSort(source, left, index-1)
+		recursionSort(source, index+1, right)
+	}
+}
+
+func partition(source []int, left, right int) int {
+	for left < right {
+		for left < right && source[left] <= source[right] {
+			right--
+		}
+		if left < right {
+			source[left], source[right] = source[right], source[left]
+			left++
+		}
+
+		for left < right && source[left] <= source[right] {
+			left++
+		}
+		if left < right {
+			source[left], source[right] = source[right], source[left]
+			right--
+		}
+	}
+
+	return left //or right
+}
+~~~
+
+
+
+
+
 #### 堆排序
 
 > - 创建一个堆 H[0……n-1]；
