@@ -5190,7 +5190,7 @@ public class LinkedBinaryTree implements BinaryTree {
 
     @Override
     public void levelOrderByStack() {
-     //层次遍历借助队列
+     //层次遍历借助队列 BFS
         System.out.println("层次遍历:");
         if (root == null) return;
         Queue<Node> queue = new LinkedList();
