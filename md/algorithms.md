@@ -547,3 +547,142 @@ class Solution {
     }
 ~~~
 
+### 排序算法
+
+#### 冒泡排序
+
+> 比较相邻的元素。如果第一个比第二个大，就交换他们两个。
+>
+> 对每一对相邻元素作同样的工作，从开始第一对到结尾的最后一对。这步做完后，最后的元素会是最大的数。
+>
+> 针对所有的元素重复以上的步骤，除了最后一个。
+>
+> 持续每次对越来越少的元素重复上面的步骤，直到没有任何一对数字需要比较。
+
+![img](https://pic1.zhimg.com/50/v2-de77d5632626c95812dc6fb1fa0f2aba_hd.webp)
+
+~~~go
+//SelectionSort is the realization of bubble sort
+func BubbleSort(source []int) []int {
+
+	for i := 0; i < len(source); i++ {
+		for j := 1; j < len(source)-i; j++ {
+			if source[j] < source[j-1] {
+				source[j], source[j-1] = source[j-1], source[j]
+			}
+		}
+	}
+	return source
+}
+~~~
+
+
+
+#### 选择排序
+
+> 首先在未排序序列中找到最小（大）元素，存放到排序序列的起始位置
+>
+> 再从剩余未排序元素中继续寻找最小（大）元素，然后放到已排序序列的末尾。
+>
+> 重复第二步，直到所有元素均排序完毕。
+
+​	
+
+![img](https://pic2.zhimg.com/50/v2-64fd7db485a8416fc5fa2cbf19410e9d_hd.webp)
+
+~~~go
+//SelectionSort is the realization of selection sort
+func SelectionSort(source []int) []int {
+	length := len(source)
+	for i := 0; i < length; i++ {
+		maxIndex := 0
+		for j := 1; j < length-i; j++ {
+			if source[j] > source[maxIndex] {
+				maxIndex = j
+			}
+		}
+		source[length-i-1], source[maxIndex] = source[maxIndex], source[length-i-1]
+	}
+	return source
+}
+~~~
+
+
+
+#### 插入排序
+
+> - 将第一待排序序列第一个元素看做一个有序序列，把第二个元素到最后一个元素当成是未排序序列。
+> - 从头到尾依次扫描未排序序列，将扫描到的每个元素插入有序序列的适当位置。（如果待插入的元素与有序序列中的某个元素相等，则将待插入元素插入到相等元素的后面。）
+
+![img](https://pic2.zhimg.com/50/v2-ffda0249330d775e6fd3488f198c5c43_hd.webp)
+
+~~~go
+//SelectionSort is the realization of insertion sort
+func InsertionSort(source []int) {
+	length := len(source)
+
+	for i := 1; i < length; i++ {
+		j := i
+		for j > 0 {
+			if source[j-1] > source[j] {
+				source[j], source[j-1] = source[j-1], source[j]
+			}
+			j -= 1
+		}
+	}
+}
+~~~
+
+
+
+#### 希尔排序
+
+> 选择一个增量序列 t1，t2，……，tk，其中 ti > tj, tk = 1；
+>
+> 按增量序列个数 k，对序列进行 k 趟排序；
+>
+> 每趟排序，根据对应的增量 ti，将待排序列分割成若干长度为 m 的子序列，分别对各子表进行直接插入排序。仅增量因子为 1 时，整个序列作为一个表来处理，表长度即为整个序列的长度
+
+![img](https://pic2.zhimg.com/50/v2-4b59f2fb05fb9124f60ab305df6f5f94_hd.webp)
+
+#### 归并排序
+
+> 申请空间，使其大小为两个已经排序序列之和，该空间用来存放合并后的序列；
+>
+> 设定两个指针，最初位置分别为两个已经排序序列的起始位置；
+>
+> 比较两个指针所指向的元素，选择相对小的元素放入到合并空间，并移动指针到下一位置；
+>
+> 重复步骤 3 直到某一指针达到序列尾；
+>
+> 将另一序列剩下的所有元素直接复制到合并序列尾。
+
+![img](https://pic4.zhimg.com/50/v2-b478eca84d811b3c3bf952734082c198_hd.webp)
+
+#### 快速排序
+
+> 从数列中挑出一个元素，称为 “基准”（pivot）;
+>
+> 重新排序数列，所有元素比基准值小的摆放在基准前面，所有元素比基准值大的摆在基准的后面（相同的数可以到任一边）。在这个分区退出之后，该基准就处于数列的中间位置。这个称为分区（partition）操作；
+>
+> 递归地（recursive）把小于基准值元素的子数列和大于基准值元素的子数列排序；
+
+![img](https://pic2.zhimg.com/50/v2-ec81c80107fb8acfbf47ec9341b77d0d_hd.webp)
+
+#### 堆排序
+
+> - 创建一个堆 H[0……n-1]；
+> - 把堆首（最大值）和堆尾互换；
+> - 把堆的尺寸缩小 1，并调用 shift_down(0)，目的是把新的数组顶端数据调整到相应位置；
+> - 重复步骤 2，直到堆的尺寸为 1。
+
+![img](https://pic3.zhimg.com/50/v2-acce604ba89b6dcd87efe1aee94b258f_hd.webp)
+
+#### 桶排序
+
+> - 设置固定数量的空桶。
+> - 把数据放到对应的桶中。
+> - 对每个不为空的桶中数据进行排序。
+> - 拼接不为空的桶中数据，得到结果
+
+![img](https://pic3.zhimg.com/50/v2-55bdaa0253026d20564c7da9f8c3dcff_hd.webp)
