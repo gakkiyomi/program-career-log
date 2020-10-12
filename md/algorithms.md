@@ -645,6 +645,39 @@ func InsertionSort(source []int) {
 
 ![img](https://pic2.zhimg.com/50/v2-4b59f2fb05fb9124f60ab305df6f5f94_hd.webp)
 
+
+
+~~~go
+//ShellSort is the realization of shell sort
+func ShellSort(source []int) {
+	K := len(source) / 2
+	for {
+		for i := 0; i < len(source); i++ {
+			gap(source, 0, len(source)-1, K)
+		}
+
+		if K == 1 {
+			break
+		}
+
+		K = K / 2
+		if K%2 == 0 {
+			K++
+		}
+	}
+}
+
+func gap(source []int, first, last, K int) {
+    for i := first; i <= last; i++ {
+		if i+K <= last && source[i] > source[i+K] {
+			source[i], source[i+K] = source[i+K], source[i]
+		}
+	}
+}
+~~~
+
+
+
 #### 归并排序
 
 > 申请空间，使其大小为两个已经排序序列之和，该空间用来存放合并后的序列；
