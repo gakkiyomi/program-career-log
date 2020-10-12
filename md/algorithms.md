@@ -659,6 +659,50 @@ func InsertionSort(source []int) {
 
 ![img](https://pic4.zhimg.com/50/v2-b478eca84d811b3c3bf952734082c198_hd.webp)
 
+~~~go
+//MergeSort is the realization of merge sort
+func MergeSort(source []int) []int {
+	if len(source) < 2 {
+		return source
+	}
+	mid := (len(source)) / 2
+	return merge(MergeSort(source[:mid]), MergeSort(source[mid:]))
+}
+
+func merge(left, right []int) []int {
+	size, li, ri := len(left)+len(right), 0, 0 //left和right的指针位置
+	slice := make([]int, size, size)
+
+	count := 0
+
+	for li < len(left) && ri < len(right) {
+		if left[li] <= right[ri] {
+			slice[count] = left[li]
+			count, li = count+1, li+1
+			continue
+		}
+		slice[count] = right[ri]
+		count, ri = count+1, ri+1
+	}
+	for li < len(left) {
+		slice[count] = left[li]
+		count, li = count+1, li+1
+	}
+	for ri < len(right) {
+		slice[count] = right[ri]
+		count, ri = count+1, ri+1
+	}
+
+	return slice
+
+}
+
+~~~
+
+
+
+
+
 #### 快速排序
 
 > 从数列中挑出一个元素，称为 “基准”（pivot）;
