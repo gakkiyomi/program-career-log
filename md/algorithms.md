@@ -1,4 +1,4 @@
-# Leetcode 算法题解
+#  Leetcode 算法题解
 
 ### 两数之和
 
@@ -804,3 +804,38 @@ func partition(source []int, left, right int) int {
 > - 拼接不为空的桶中数据，得到结果
 
 ![img](https://pic3.zhimg.com/50/v2-55bdaa0253026d20564c7da9f8c3dcff_hd.webp)
+
+~~~go
+//BucketSort is the realization of bucket sort
+func BucketSort(source []int, bucketSize int) []int {
+	//桶数
+	var num int
+	if bucketSize == 0 {
+		num = len(source)
+	} else {
+		num = bucketSize
+	}
+
+	//数组最大值
+	max := array.Array.GetMaxInArray(source)
+
+	//桶
+	buckets := make([][]int, num)
+
+	for _, n := range source {
+		// 计算出指定值应该进入哪个桶
+		idx := n * num / (max + 1)
+		buckets[idx] = append(buckets[idx], n)
+	}
+
+	sorted := make([]int, 0)
+	for _, bucket := range buckets {
+		if len(bucket) > 0 {
+			InsertionSort(bucket)  //内部实现由插入排序实现  也可以由其他排序实现
+			sorted = append(sorted, bucket...)
+		}
+	}
+	return sorted
+}
+~~~
+
