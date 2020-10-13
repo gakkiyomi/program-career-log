@@ -213,8 +213,32 @@ Nmap拥有丰富的系统数据库nmap-os-db，目前可以识别2600多种操�
 
 ### 漏洞扫描
 
-nmap本身不具备漏洞扫描的功能，但是它支持插件开发，可以与第三方的漏洞工具集成。
+nmap 内置了一个**vuln**分类支持漏洞扫描如果想要使用这个分类下的所有脚本，可以在--script的后面加上分类名称，同样我们可以用相似的方法来提高目标版本的检测功能，以及将目标端口设置为全部有效端口。
 
-**Vulscan，它是Nmap的一个漏洞扫描增强模块，通过它可以把Nmap打造成一款实用高效免费的漏洞扫描器。Vulscan目前包含了CVE、OSVDB、Exploit-db、openvas等多个漏洞平台指纹数据，具备离线扫描功能，对主机系统漏洞有很好的探测识别效果。**
+~~~go
+nmap -p- -sV --version-all --script vuln 192.168.1.146
+~~~
+
+-p- 指的是将目标端口指定为全部有效端口， -sV --version-all 用来提高版本检测的效率。
+
+也可以指定详细的某个漏洞类型，如果填--script=vuln 则扫描所有漏洞库
+
+```
+nmap --script http-slowloris-check  192.168.1.146
+```
+
+下图是在146上扫描出端口为8080的服务也就是keycloak的一个漏洞
+
+测试Web服务器是否受到Slowloris DoS攻击的漏洞，而无需实际发起DoS攻击。
+
+![image.png](https://b3logfile.com/file/2020/10/image-37c9c31d.png)
+
+![image.png](https://b3logfile.com/file/2020/10/image-0b152be7.png)
+
+
+
+更多漏洞扫描脚本详情  https://nmap.org/nsedoc/categories/vuln.html 
+
+**Vulscan，它是Nmap的一个第三方漏洞扫描增强模块，通过它可以把Nmap打造成一款实用高效免费的漏洞扫描器。Vulscan目前包含了CVE、OSVDB、Exploit-db、openvas等多个漏洞平台指纹数据，具备离线扫描功能，对主机系统漏洞有很好的探测识别效果。**
 
 文档: https://www.freebuf.com/sectool/144821.html
