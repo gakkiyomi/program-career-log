@@ -134,7 +134,7 @@ TCP FIN 探测到端口关闭：![image.png](https://b3logfile.com/file/2020/10/
 
 TCP FIN探测到端口开放/被屏蔽![image.png](https://b3logfile.com/file/2020/10/image-4823e190.png)
 
-- UDP scanning
+#### UDP scanning
 
 UDP扫描方式用于判断UDP端口的情况。向目标主机的UDP端口发送探测包，如果收到回复“ICMP port unreachable”就说明该端口是关闭的；如果没有收到回复，那说明UDP端口可能是开放的或屏蔽的。因此，通过反向排除法的方式来断定哪些UDP端口是可能出于开放状态。
 
@@ -215,7 +215,7 @@ Nmap拥有丰富的系统数据库nmap-os-db，目前可以识别2600多种操�
 
 nmap支持使用lua语言来为nmap进行脚本开发。使用Python或者其他语言来调用Nmap进行格式解析，这种方式无法预估扫描进度，不能进行状态交互，效率很差，如果有需要我们可以自己编写定制化的的Nmap脚本。
 
-	#### 脚本分类
+**脚本分类**
 
 - auth 处理身份验证
 - broadcast 网络广播
