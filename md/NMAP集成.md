@@ -4,7 +4,7 @@
 
 ### 方案
 
-使用易上手，开发效率高的Python进行nmap-driver的开发，将nmap返回的数据压入消息队列，cmdb订阅此消息队列将数据存入cmdb，IPAM可以直接从cmdb中获取数据进行展示，也可以主动调用nmap-driver暴露的接口手动拉取数据展示并同步至cmdb。
+使用易上手，开发效率高的Python进行nmap-driver的开发，将nmap返回的数据压入消息队列，cmdb订阅此消息队列将数据存入cmdb，IPAM可以直接从cmdb中获取数据进行展示，也可以主动调用nmap-driver暴露的接口手动拉取数据展示并同步至cmdb。 
 
 
 
@@ -16,7 +16,7 @@
 
 ### 接口设计(nmap-driver 提供给 IPAM 使用 ) RPC or HTTP?
 
-**查看IP状态** `GET /api/nmap-driver/ip/status?ip="192.168.1.146"`
+**查看IP详情** `GET /api/nmap-driver/ip?ip="192.168.1.146"`
 
 ~~~json
 {
