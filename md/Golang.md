@@ -1984,10 +1984,10 @@ span_list := doc.FindElements(`//div[@id='list']/dl/dd/a`) //这里写上@href�
 
 
 
-### go设置阿里云代理
+### go设置代理
 
 ```shell
-GOPROXY=https://mirrors.aliyun.com/goproxy/
+go env -w GOPROXY=https://goproxy.cn
 ```
 
 如果上面的不生效 直接执行
