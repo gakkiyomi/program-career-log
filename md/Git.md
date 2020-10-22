@@ -215,3 +215,82 @@ git config --local(global) user.name 'gakkiyomi'
 git config --local(global) user.email 'gakkiyomi@gmail.com'
 ~~~
 
+
+
+### .git/objects/pack文件夹变得非常大
+
+首先看一下.git目录
+
+~~~
+├── HEAD
+├── branches
+├── index
+├── logs
+│   ├── HEAD
+│   └── refs
+│       └── heads
+│           └── master
+├── objects
+│   ├── 88
+│   │   └── 23efd7fa394844ef4af3c649823fa4aedefec5
+│   ├── 91
+│   │   └── 0fc16f5cc5a91e6712c33aed4aad2cfffccb73
+│   ├── 9f
+│   │   └── 4d96d5b00d98959ea9960f069585ce42b1349a
+│   ├── info
+│   └── pack
+└── refs
+    ├── heads
+    │   └── master
+    └── tags
+~~~
+
+- ![\color{#ff0000}{description}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Bdescription%7D) 用于GitWeb程序
+-  ![\color{#ff0000}{config}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Bconfig%7D) 配置特定于该仓库的设置
+-  ![\color{#ff0000}{hooks}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Bhooks%7D) 放置客户端或服务端的hook脚本
+-  ![\color{#ff0000}{HEAD}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7BHEAD%7D) 指明当前处于哪个分支
+-  ![\color{#ff0000}{objects}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Bobjects%7D) Git对象存储目录
+-  ![\color{#ff0000}{refs}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Brefs%7D) Git引用存储目录
+-  ![\color{#ff0000}{branches}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Bbranches%7D) 放置分支引用的目录
+
+每次 ![\color{#ff0000}{git}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Bgit%7D) ![\color{#ff0000}{add}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Badd%7D) 都会生成一个Git对象，称为**blob 对象**，存放在objects目录下。
+
+#### 这个**blob 对象**里保存的是什么呢?
+
+Git在add文件时，会把文件完整的保存成一个新的**blob 对象**。通过  ![\color{#ff0000}{git}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Bgit%7D)  ![\color{#ff0000}{gc}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Bgc%7D) 打包或者每次![\color{#ff0000}{git}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Bgit%7D)  ![\color{#ff0000}{push}](https://math.jianshu.com/math?formula=%5Ccolor%7B%23ff0000%7D%7Bpush%7D) 的时候Git都会自动执行一次打包过程，将Blob对象合并成一个包文件，同时会生成一个索引文件，索引文件中包含了每个Blob对象在包文件中的偏移信息，Git在打包的过程中使用了增量编码方案，只保存Blob对象的不同版本之间的差异，这使得仓库会瘦身。
+
+**既然Git会对Blob对象进行合并优化，那么objects文件夹为什么还会那么大呢?**
+
+因为当Blob对象在合并时不能对.a进行差异化比较，所以每次在添加.a文件时，都会保存一份.a文件，用于后续代码还原时使用。
+
+所以当频繁更换.a文件时，objects下的pack文件会越来越大。虽然这个.a文件后续可能用不到删除了，但是pack中的这个.a文件的缓存还是会一直存在。
+
+### 删除pack中无用的大文件缓存
+
+**首先先找出git中最大的文件：**
+
+> git verify-pack -v .git/objects/pack/pack-*.idx | sort -k 3 -g | tail -5
+
+**执行结果：**
+ 
+
+
+
+![img](https:////upload-images.jianshu.io/upload_images/6188399-34b6418b8e832d10.png?imageMogr2/auto-orient/strip|imageView2/2/w/671/format/webp)
+
+
+
+
+**第一行的字母其实相当于文件的id，用以下命令可以找出id对应的文件名：**
+
+> git rev-list --objects --all | grep 8f10eff91bb6aa2de1f5d096ee2e1687b0eab007
+
+**找到最大的几个文件后，怎么删除呢？**
+
+能够胜任这个任务的命令叫做 [filter-branch](https://links.jianshu.com/go?to=https%3A%2F%2Fgit-scm.com%2Fdocs%2Fgit-filter-branch):
+
+> git filter-branch --force --prune-empty --index-filter 'git rm -rf --cached --ignore-unmatch nmap-driver.tar' --tag-name-filter cat -- --all
+
+等命令执行完后，要提交到远程：
+
+> git push --force --all
