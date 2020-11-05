@@ -90,6 +90,10 @@
 
 ![image.png](https://b3logfile.com/file/2020/10/image-11525d0c.png)
 
+![image.png](https://b3logfile.com/file/2020/11/image-734ef0fc.png)
+
+![image.png](https://b3logfile.com/file/2020/11/image-54cec1e6.png)
+
 ![image.png](https://b3logfile.com/file/2020/10/image-c1f6e4c7.png)
 
 
@@ -140,9 +144,9 @@
 
 ![image.png](https://b3logfile.com/file/2020/10/image-3711761f.png)
 
+![image.png](https://b3logfile.com/file/2020/11/image-05672636.png)
 
-
-
+![image.png](https://b3logfile.com/file/2020/11/image-9b691203.png)
 
 #### StatefulSet
 
