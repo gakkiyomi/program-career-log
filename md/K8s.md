@@ -154,3 +154,15 @@
 
 ![image.png](https://b3logfile.com/file/2020/10/image-9ccf7895.png)
 
+
+
+### 运维
+
+#### 批量删除Evicted状态的pod
+
+~~~shell
+kubectl -n sky  get pods | grep Evicted |awk '{print$1}'|xargs kubectl -n sky delete pods
+~~~
+
+
+
