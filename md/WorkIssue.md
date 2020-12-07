@@ -251,3 +251,13 @@ cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l
 cat /proc/cpuinfo| grep "cpu cores"| uniq
 ```
 
+
+
+### VIM 批量替换
+
+abc 批量替换成 def 
+
+~~~
+:%s#abc#def#g
+~~~
+
