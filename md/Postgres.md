@@ -259,6 +259,49 @@ kubectl delete pods postgres-0 -n postgres
 
 
 
+## 架构
+
+postgres是典型的C/S架构,并且是与mysql的多线程架构不同,postgres是多进程架构 。
+
+下面此为进程架构图
+
+![image-20201221115035395](../images/image-20201221115035395.png)
+
+### 内存架构
+
+postgres中的内存可以分为两大类：
+
+1. 本地内存区域
+   + 由每个后端进程分配以供自己使用
+2. 共享内存区域
+   + Shared Buffer
+     + postgres为了减少磁盘IO次数，将表和索引中的页面从持久性存储加载到此处，并直接对其进行操作。
+   + WAL Buffer
+     + 为确保服务器故障不会丢失任何数据，PostgreSQL支持WAL机制。WAL数据（也称为XLOG记录）是PostgreSQL中的事务日志；WAL缓冲区是在写入持久性存储之前WAL数据的缓冲区。
+
+### 进程类型
+
+| 名字                        | 存储尺寸        | 作用                                                         |
+| --------------------------- | --------------- | ------------------------------------------------------------ |
+| Postmaster (Daemon) Process | postgres server | 主后台驻留进程是PostgreSQL启动时第一个启动的进程。启动时，他会执行恢复、初始化共享内存爱你的运行后台进程操作。正常服役期间，当有客户端发起链接请求时，它还负责创建后端进程。 |
+| Background Process          | 后台进程        | 与Postmaster和Backend相比，不可能简单地解释每个功能，因为这些功能取决于个别的特定功能和PostgreSQL内部。 |
+| Backend Process             | 后端进程        | 由postgres服务器进程启动，并处理由一个连接的客户端发出的所有查询。它通过单个TCP连接与客户端通信，并在客户端断开连接时终止。 |
+| Client Process              | 8 bytes         | 客户端进程需要和后端进程配合使用，处理每一个客户链接。通常情况下，Postmaster进程会派生一个子进程用来处理用户链接。 |
+
+Background进程详细列表
+
+| 进程                | 作用                                                         |
+| ------------------- | ------------------------------------------------------------ |
+| logger              | 将错误信息写到log日志中                                      |
+| checkpointer        | 当检查点出现时，将脏内存块写到数据文件                       |
+| writer              | 周期性的将脏内存块写入文件                                   |
+| wal writer          | 将WAL缓存写入WAL文件                                         |
+| Autovacuum launcher | 当自动vacuum被启用时，用来派生autovacuum工作进程。autovacuum进程的作用是在需要时自动对膨胀表执行vacuum操作。 |
+| archiver            | 在归档模式下时，复制WAL文件到特定的路径下。                  |
+| stats collector     | 用来收集数据库统计信息，例如会话执行信息统计（使用pg_stat_activity视图）和表使用信息统计（pg_stat_all_tables视图） |
+
+
+
 ## 特性
 
 在使用方面，postgres性能十分强劲，使用起来也十分方便。
@@ -418,7 +461,8 @@ postgres提供了多种适用于不同场景的索引供我们选择使用
   CREATE INDEX idxgin ON policy USING gin (source,destination); -- 在 source 和 destination字段上建立联合索引 遵循最左法则
   ~~~
 
-  
+
+
 
 ## 运维
 
