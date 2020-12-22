@@ -14,7 +14,7 @@ docker pull postgres:11.3
 
 ![image-20201211152826182](../images/image-20201211152826182.png)
 
-第二步：创建namesapce postgres 我们会将postgres放在postgres 的namespace下
+第二步：创建namesapce postgres 我们会将postgres部署到postgres的namespace下
 
 ~~~shell
 kubectl create ns postgres
