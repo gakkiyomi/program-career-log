@@ -1,5 +1,3 @@
-#
-
 
 
 # K8S
@@ -45,9 +43,8 @@
 >  - Node系统容量：描述Node可用的系统资源，包括CPU、内存、最大可调度Pod数量等。
 >  - 其他：内核版本号、Kubernetes版本等。
 >
->- 查看Node信息 ：
+>- 查看Node信息 :  ``` kubectl describe node```
 >
->  ​                                         ``` kubectl describe node```
 
 ![image.png](https://b3logfile.com/file/2020/10/image-ef1add00.png)
 
