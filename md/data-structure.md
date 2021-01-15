@@ -70,9 +70,15 @@ R树的核心思想是聚合距离相近的节点并在树结构的上一层将�
 
 R树的主要难点在于构建一棵既能保持平衡（所有叶子节点在同一层），又能让树上的矩形既不包括太多空白区域也不过多相交（这样在搜索的时候可以处理尽量少的子树）的高效的树。例如，最初的通过插入节点来构建一棵高效的R树的构想是选择一棵子树插入，使得对其外接矩形的扩张最小。填满一页后，把数据分成两份，使它们分别包括尽量小的区域。大部分关于R树的研究和改进都是关于如何改进建树的过程。它们可以分为两类，一类是如何从头开始构建一棵高效的树（被称为批量加载），另一类是如何在一棵已经存在的树上插入和删除。
 
-R树不保证[最坏情况](https://zh.wikipedia.org/w/index.php?title=最坏情况&action=edit&redlink=1)下的性能，但是在现实数据[[5\]](https://zh.wikipedia.org/wiki/R树#cite_note-5)上一般表现不错。理论上来说，批量加载的[优先级R树](https://zh.wikipedia.org/w/index.php?title=优先级R树&action=edit&redlink=1)是最坏情况下的最优解[[6\]](https://zh.wikipedia.org/wiki/R树#cite_note-prtree-6)，但由于复杂度太高，目前还没有在实际应用中获得关注。
+R树不保证[最坏情况](https://zh.wikipedia.org/w/index.php?title=最坏情况&action=edit&redlink=1)下的性能，但是在现实数据[[5\]](https://zh.wikipedia.org/wiki/R树#cite_note-5)上一般表现不s。理论上来说，批量加载的[优先级R树](https://zh.wikipedia.org/w/index.php?title=优先级R树&action=edit&redlink=1)是最坏情况下的最优解[[6\]](https://zh.wikipedia.org/wiki/R树#cite_note-prtree-6)，但由于复杂度太高，目前还没有在实际应用中获得关注。
 
 当数据被构建成R树时，任意[Lp空间](https://zh.wikipedia.org/wiki/Lp空间)中的数据的[最近k个邻居](https://zh.wikipedia.org/wiki/最近鄰居法)都可以很高效地用空间交集计算[[7\]](https://zh.wikipedia.org/wiki/R树#cite_note-7) 。这对很多基于[最近邻居法](https://zh.wikipedia.org/wiki/最近鄰居法)的算法（例如[本地异常因子算法](https://zh.wikipedia.org/w/index.php?title=本地异常因子算法&action=edit&redlink=1)）都很有帮助。 DeLi-Clu[[8\]](https://zh.wikipedia.org/wiki/R树#cite_note-8)提出的Density-Link-Clustering是一种使用R树来进行空间交集，从而高效地计算OPTICS聚类的聚类分析算法.
+
+
+
+结构图：
+
+![structure](../images/aaa222.jpg)
 
 
 
