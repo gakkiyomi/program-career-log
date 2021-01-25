@@ -2,7 +2,7 @@
 currTime=$(date +"%Y-%m-%d %T")
 message=$1
 
-sed -i 's/*/${currTime}/g' /Users/fangcong/source/study-log/time.log
+sed -i "" 's/*/${currTime}/g' /Users/fangcong/source/study-log/time.log
 
 str="${message} by ${currTime}"
 echo git add start
