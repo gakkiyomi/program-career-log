@@ -1,6 +1,9 @@
 #!/bin/sh
 currTime=$(date +"%Y-%m-%d %T")
 message=$1
+
+sed -i 's/*/${currTime}/' ./time.log
+
 str="${message} by ${currTime}"
 echo git add start
 git add .
