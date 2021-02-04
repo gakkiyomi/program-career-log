@@ -307,4 +307,4 @@ action nat address-group test2            //test2为地址池里面的地址
 
 nat server untrust_2_dmz_b9fe1 protocol tcp  global 12.1.214.33 443 inside 10.1.206.1 9999
 
-将公网ip12.1.214.33的443端口 映射到私有ip 10.1.206.1的9999端口上
+将公网ip12.1.214.33的443端口 映射到私有ip 10.1.206.1的999
