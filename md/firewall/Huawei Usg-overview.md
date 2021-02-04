@@ -303,3 +303,8 @@ action nat address-group test2            //test2为地址池里面的地址
 
 ![img](/Users/fangcong/source/study-log/md/../images/image2020-2-28_16-17-37.png)
 
+所以我们会通过nat-server的方式来进行dnat的配置
+
+nat server untrust_2_dmz_b9fe1 protocol tcp  global 12.1.214.33 443 inside 10.1.206.1 9999
+
+将公网ip12.1.214.33的443端口 映射到私有ip 10.1.206.1的9999端口上
