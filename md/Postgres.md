@@ -482,3 +482,15 @@ CREATE DATABASE nap;
 psql -U postgres -d nap -f nap.sql
 ```
 
+### postgres 查看最大连接数
+
+~~~sql
+show max_connections;
+~~~
+
+### postgres 查看当前连接数
+
+~~~sql
+select count(*), usename from pg_stat_activity group by usename;
+~~~
+
