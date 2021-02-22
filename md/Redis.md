@@ -157,7 +157,103 @@ AOF持久化功能的实现可以分为命令追加(append)，文件写入，文
 
 ##### 命令追加
 
+ 当AOF功能正处在打开状态时，客户端发送一条写入命令，服务器执行完之后，会以协议格式将这条命令追加到aof_buf缓冲区末尾
 
+```c
+struct redisServer {
+   // ....
+   // AOF 缓冲区
+   sds aof_buf;
+   // ....
+}
+```
+
+这就是AOF持久化命令追加步骤的实现原理。
 
 ##### AOF文件的写入与同步
 
+Redis的服务器进程就是一个事件循环(loop),这个循环中的文件事件负责接收客户端的命令请求，以及向客户端发送命令回复。那么如果打开了AOF功能，则会将命令尾加到aof_buf缓冲区中，所以在事件结束前都会调用flushAppendOnlyFile函数来考虑是否要将缓冲区里的内容写入和保存到AOF文件当中。
+
+伪代码:
+
+```c
+def eventLoop():
+   while True:
+     //处理文件事件，接收命令请求以及发送命令回复
+     processFileEvents();
+     //处理时间事件
+     processTimeEvents();
+     //考虑是否将aof_buf中的内容写入AOF缓冲区
+     flushAppendOnlyFile();
+```
+
+`flushAppendOnlyFile`这个函数的行为由服务器配置的`appendfsync`选项的值来决定
+
++ always
+  + 将aof_buf缓冲区中的所有内容写入并同步到AOF文件
++ everysec
+  + 将oaf_buf缓冲区中的所有内容写入到AOF文件，如果上次同步AOF文件的时间距离现在超过了1秒钟，那么再次对AOF文件进行同步，并且这个同步操作是由一个线程专门负责的
++ no
+  + 将aof_buf缓冲区中的所有内容写入到AOF文件，但并不对AOF文件进行同步，何时同步由操作系统来决定。
+
+![image-20210222160917530](../images/image-20210222160917530.png)
+
+##### AOF文件重写的实现
+
+为了解决AOF文件体积膨胀的问题，Redis提供了AOF文件重写功能，新生成一个AOF文件来替代现有的AOF文件，新旧两个文件所保存的数据库状态相同，但新文件不会包含任何冗余命令,所以新AOF文件的体积会比旧的文件小。
+
+redis的重写aof算法非常的聪明。
+
+**直接读取key的值，获取最新的key当前的值,然后用一条命令就可以做为这个key的当前状态。**
+
+伪代码:
+
+```ruby
+def aof_rewrite(new_aof_file_name):
+    # 创建新的AOF文件
+  	f = create_file(new_aof_file_name)
+    
+    # 遍历数据库
+    for db in redisServer.db:
+       # 忽略空数据库
+       if db.is_empty(): continue
+       
+       # 显示指定数据库
+       f.write_command("SELECT "+ db.id)  
+         
+       for key in db:
+       	# 忽略已过期的key
+       	if key.is_expired(): continue
+         # 根据key的类型对key进行重新
+         switch(key.type):
+             case String:
+               rewrite_string(key) #根据key获取到所有的value 然后拼成写入命令即可
+             case List:
+               rewrite_list(key)
+             case Hash:
+               rewrite_hash(key)
+             case Set:
+               rewrite_set(key)
+             case SortedSet:
+               rewrite_sorted_set(key)  
+  				if key.have_expire_time()
+             rewrite_expire_time(key)
+     #写入完毕，关闭文件
+     f.close()       
+```
+
+**ps:**在实际中，重写程序在处理列表，哈希表，集合，有序集合这四种带有多个元素的键时，会先检查键所包含的元素数量，如果元素的数量超过了redis.h/REDIS_AOF_REWRITE_ITEMS_PER_CMD 常量的值，那么重写程序将使用多条命令来记录键的值，而不是单单一条命令。在redis 2.9 版本中这个常量的值为64。
+
+##### AOF后台重写
+
+因为redis是使用单线程来处理请求命令，为了不阻塞主进程,所以AOF重写的工作会起一个子进程来进行。
+
+但这样做的同时会导致一个问题，如果子进程在进行重写的同时，主进程继续处理命令请求，而新的命令可能会对现在的数据库状态进行修改，从而使得重写前后的文件保存的数据库状态不一致。
+
+![image-20210222173527549](../images/image-20210222173527549.png)
+
+为了解决这个问题，redis服务器设置了一个AOF重写缓冲区，这个缓冲区在服务器创建子进程之后开始使用，当执行完一个写命令之后，他会同时将这个写命令发送给AOF缓冲区和AOF重写缓冲区，这样子进程开始后，服务器执行的所有写命令都会被记录到AOF重写缓冲区里面，这样就能解决上面这个问题了。
+
+在整个过程中只有重写完成后的信号处理函数会对主进程造成阻塞，其他时候都不会造成阻塞。
+
+这就是**AOF后台重写，也就是BGREWRITEAOF命令**的实现原理。
