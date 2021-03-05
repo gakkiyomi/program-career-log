@@ -335,7 +335,7 @@ public class FieldSchema<T> implements Serializable {
 
 
 
-### 直接使用 Hikari 数据源的连接不会释放？
+### 直接使用 HikariCP 数据源的连接不会释放？
 
 >HikariPool-1 - Connection is not available, request timed out after 30003ms.
 
@@ -343,3 +343,4 @@ public class FieldSchema<T> implements Serializable {
 
 解决方案：更换获取连接的方法，使用spring提供的DataSourceUtils.getConnection()后不再出现。
 
+备选方案：stackoverflow上有人说需要用完关闭connection,未验证。
