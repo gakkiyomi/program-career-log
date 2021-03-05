@@ -323,15 +323,21 @@ git pull origin main --allow-unrelated-histories
 
 会弹出一个界面
 
-![image-20210305135925227](/Users/fangcong/Library/Application Support/typora-user-images/image-20210305135925227.png)
-
-![image-20210305140000376](/Users/fangcong/Library/Application Support/typora-user-images/image-20210305140000376.png)
-
-然后又会弹出一个界面
+![image-20210305135925227](../images/image-20210305135925227.png)
 
 
 
-退出后查看git log
+将你要合并的那些commit 的pick 改成s(squash)压缩
 
 
+
+![image-20210305140000376](../images/image-20210305140000376.png)
+
+然后又会弹出一个界面,填写这几个commit合并后的commit-massage 这里我写了rebase 1 to 8
+
+![image-20210305140416230](../images/image-20210305140416230.png)
+
+退出后查看git log  合并完成
+
+![image-20210305140504550](../images/image-20210305140504550.png)
 
