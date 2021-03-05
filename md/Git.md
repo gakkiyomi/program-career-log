@@ -307,3 +307,31 @@ git pull origin main --allow-unrelated-histories
 
 使用上面的命令可以允许不相关历史提，强制合并
 
+
+
+### git rebase -i
+
+使用git rebase -i 来将多次commit合并为一个commit。
+
+
+
+我们分别提交2个commit `rebase 1 and rebase 2 and rebase 3`,`rebase 4 and rebase 5 and rebase 6`
+
+然后执行
+
+`git rebase -i HEAD~2`
+
+会弹出一个界面
+
+![image-20210305135925227](/Users/fangcong/Library/Application Support/typora-user-images/image-20210305135925227.png)
+
+![image-20210305140000376](/Users/fangcong/Library/Application Support/typora-user-images/image-20210305140000376.png)
+
+然后又会弹出一个界面
+
+
+
+退出后查看git log
+
+
+
