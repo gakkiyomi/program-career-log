@@ -281,7 +281,7 @@ env
 
 ### linux 和 macos 命令行光标移动首尾
 
-#### 首
+首
 
 ~~~
 Control + a
@@ -302,4 +302,44 @@ Control + e
 ~~~shell
 sed -i "" "s/.*/${currTime}/g" /Users/fangcong/source/study-log/time.log
 ~~~
+
+
+
+### java interface类型不能进行序列化和反序列化
+
+当使用interface作为一个类属性时，将这个类存储到数据库时会报错 因为springboot使用的jackson 序列化不了接口，因为无法确定使用的是哪个实现类。
+
+解决办法: 使用范型来解决
+
+~~~java
+public class FieldSchema implements Serializable {
+
+    private String property_id;
+    private String property_name;
+    private Option option;
+    
+}
+
+
+
+public class FieldSchema<T> implements Serializable {
+
+    private String property_id;
+    private String property_name;
+    private T option;
+    
+}
+~~~
+
+这样是可以序列化和反序列化的，此时jackson会使用 LinkedHashMap来序列化和反序列化。
+
+
+
+### 直接使用 Hikari 数据源的连接不会释放？
+
+>HikariPool-1 - Connection is not available, request timed out after 30003ms.
+
+默认连接池的连接数为10,当我直接使用datasource.getConnection()去执行sql，10次之后，就会报这个错。
+
+解决方案：更换获取连接的方法，使用spring提供的DataSourceUtils.getConnection()后不再出现。
 
