@@ -1,6 +1,6 @@
 # etcd的基本使用和原理
 
->etcd诞生于 CoreOS 公司，最初用于解决集群管理系统中 OS 升级的分布式并非控制，配置文件的存储与分发等问题。基于此，etcd被设计为提供高可用，强一致的小型key-value数据存储服务，该项目当前隶属于cncf基金会。目前根据不完全统计有超过30个公司在自己的项目中使用了etcd,其中最出名的就是google公司开源的kubernetes，kubernetes使用etcd来存储关键的元数据。
+>etcd诞生于 CoreOS 公司，最初用于解决集群管理系统中 OS 升级的分布式并发控制，配置文件的存储与分发等问题。基于此，etcd被设计为提供高可用，强一致的小型key-value数据存储服务，该项目当前隶属于cncf基金会。目前根据不完全统计有超过30个公司在自己的项目中使用了etcd,其中最出名的就是google公司开源的kubernetes，kubernetes使用etcd来存储关键的元数据。
 
 ## etcd的安装
 
