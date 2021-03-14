@@ -1,2 +1,2 @@
-# study-log
-this is gakkiyomi programming career log
+# 不再更新，学习文章请跳转至[learn-daliy](https://github.com/gakkiyomi/learn-daliy)
+
